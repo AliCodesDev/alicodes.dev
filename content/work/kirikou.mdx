@@ -1,0 +1,20 @@
+export const metadata = {
+  order: 2,
+  title: "Kirikou",
+  summary:
+    "A media intelligence agent that analyses how different outlets narrate the same event — autonomous RSS ingestion, comparative bias analysis, and an LLM layer behind a hardened API.",
+  role: "Solo build",
+  period: "2026 — in progress",
+  status: "In development.",
+  stack: ["Python", "FastAPI", "PostgreSQL", "Celery", "Redis"],
+  draft: true,
+};
+
+Write-up pending. Kirikou is the public counterpart to the private work on
+[Safiyr](/work/safiyr) — inspectable code for the same kind of problem: an
+autonomous pipeline that ingests continuously, extracts structure from
+unstructured text, and exposes it behind an API that takes security seriously.
+
+Notes for this page: the Celery Beat scheduling model, why the auth layer was
+built before the analysis layer, and what comparative bias analysis can and
+cannot honestly claim.

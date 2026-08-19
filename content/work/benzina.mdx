@@ -1,0 +1,19 @@
+export const metadata = {
+  order: 4,
+  title: "Benzina",
+  summary:
+    "A real-time fuel finder for Lebanon. ~400 stations on a live map, prices in LBP and USD, full Arabic and English — built for a country where finding fuel is a daily problem.",
+  role: "Solo build",
+  period: "2026",
+  status: "Live.",
+  stack: ["Next.js", "TypeScript", "Supabase", "PostGIS", "Mapbox"],
+  draft: true,
+};
+
+Write-up pending. The one on this list with real users and a real constraint:
+people needed it during a fuel crisis, on bad connections, in two languages and
+two writing directions.
+
+Notes for this page: the weighted ranking model (proximity, fuel match, open
+status), why prices are dual-currency, RTL as a first-class layout rather than a
+mirror, and the weekly scrape that keeps prices honest.

@@ -1,0 +1,149 @@
+export const metadata = {
+  order: 1,
+  title: "Safiyr",
+  summary: "Clinical continuity infrastructure for EU healthcare. Patients narrate their medical story before a consultation; the system reconciles it against their documents and hands the clinician a brief where every fact is traceable to its source.",
+  role: "Founding Engineer / Tech Lead \u2014 sole engineer",
+  period: "March \u2013 August 2026",
+  location: "Paris, France",
+  status: "Shut down. Architecture and reasoning preserved.",
+  stack: [
+    "Python 3.12", "FastAPI", "PostgreSQL", "Redis", "SQLAlchemy", "Alembic",
+    "Next.js 15", "TypeScript", "AWS KMS", "Claude Sonnet 5",
+  ],
+};
+
+A patient sits down with a doctor they have never met. They have fifteen minutes. Somewhere in the patient's memory, and somewhere in a folder of PDFs on their phone, is the information the clinician needs. Most of it never makes it across the desk.
+
+Safiyr was infrastructure for that gap. Before a consultation, the patient tells their medical story to a conversational interface called Naia. The system reconciles that spoken narrative against the documents they upload, and hands the clinician a brief where **every single clinical fact is traceable to the sentence it came from** — a patient's own words, or a specific line in a specific document.
+
+I was the sole engineer. I designed and built it over five months: the event-sourced backend, the encryption layer, the extraction and reconciliation pipeline, and both frontends.
+
+It is shut down. I will get to why.
+
+---
+
+## The constraint that shaped everything
+
+Two regulatory facts governed every technical decision:
+
+**GDPR Article 9.** Health data is a special category. Processing it demands an explicit legal basis, real consent machinery, and genuine erasure — not a `deleted_at` column.
+
+**The Medical Device Regulation.** Software that diagnoses, triages, or recommends treatment is a medical device in the EU. Certification is a multi-year, multi-hundred-thousand-euro undertaking.
+
+Most teams treat these as a compliance checklist bolted on at the end. I treated the second one as an architectural requirement: Safiyr had to be **non-MDR by construction** — not "we told the model not to diagnose," but *the system has nowhere to put a diagnosis.*
+
+That single decision is the most interesting engineering in the project.
+
+---
+
+## Non-MDR by construction
+
+The system extracts clinical facts from free text using an LLM. An LLM will happily tell you that a patient's symptoms suggest a condition. The moment it does, the product becomes a regulated medical device.
+
+So I built four reinforcing layers, none of them sufficient alone:
+
+**Layer 1 — the system prompt.** French-language instructions explicitly forbidding diagnosis, severity classification, triage, recommendation, prescription, and assessment.
+
+**Layer 2 — the tool-use schema.** This is the structural control, and it does the real work. The extraction schema's `entity_type` enum is hard-coded to five discriminators: `medication`, `condition`, `allergy`, `lab_result`, `vital_sign`. There is no `severity` field. No `urgency`. No `recommendation`, `assessment`, `triage_priority`, or `diagnosis`. **The model cannot return a diagnostic judgement because the schema has nowhere to put one.**
+
+**Layer 3 — validation.** Pydantic discriminated unions with `extra='forbid'`, plus a runtime allowlist filter. The allowlist derives from the entity subclasses' own discriminators rather than a duplicated list, so schema drift fails loudly at import time instead of quietly at runtime.
+
+**Layer 4 — the rendering boundary.** The clinician UI mirrors the data shape one-to-one. No counts, no ordering by importance, no visual emphasis that could imply severity. This is enforced at the design-token layer: a `[data-theme="clinical"]` surface that structurally cannot express urgency, because the tokens for it do not exist.
+
+I rejected two tempting alternatives. **Prompt-only** fails because prompts drift across model upgrades — a new model version shifts behaviour subtly at the boundary, and a regulatory-line failure could go undetected for months. The schema constraint doesn't drift. **Token-stream regex filtering** solves the wrong problem: it is whack-a-mole against a generative model, and it would also strip legitimate verbatim quotes from a document that happen to contain a prohibited word.
+
+I also rejected using a second model as a safety classifier. The regulatory line is too sharp for a probabilistic gate. You do not defend a legal boundary with something that is right 97% of the time.
+
+---
+
+## Provenance: verbatim or nothing
+
+The clinician's trust in the brief is the entire product. If a fact might be a paraphrase or a hallucination, the brief is worse than useless — it is a liability.
+
+So provenance is structural. Every extracted fact carries an envelope recording where it came from. Facts marked as direct quotes are **enforced verbatim against the source text**, not merely requested to be. The `extraction_method` field carries the trust signal, so a clinician reading the brief can tell at a glance whether they are looking at the patient's exact words or a structural inference.
+
+Narrative extraction runs on the current conversational turn only. This costs real recall — a patient saying "I stopped taking it last year" two turns after naming the medication produces a fact I miss. I accepted that. Cross-turn coreference resolution would have meant the model reconstructing what the patient *probably* meant, and a reconstructed quote is not a quote. Missing a fact is recoverable. A fabricated verbatim citation in a medical brief is not.
+
+---
+
+## Reconciliation: surface conflicts, never resolve them
+
+The patient says they take 5mg. The discharge summary says 10mg. What should the system do?
+
+Nothing. It flags both, shows the clinician each source, and gets out of the way. Deciding which is correct is a clinical judgement — that is precisely the line that turns software into a medical device.
+
+The matcher dispatches per entity type, and the scope tightens as clinical risk rises:
+
+| Entity type | Matching |
+|---|---|
+| Medication | Full matching — dose, frequency, route |
+| Condition, allergy | Agreement-only — flag agreement, never assert conflict |
+| Lab result, vital sign | Disabled in V1 |
+
+Labs and vitals are disabled because meaningful comparison requires understanding reference ranges and temporal context — which is interpretation, which is the line again. Better to ship nothing than to ship a comparison that implies a judgement.
+
+One detail I am quietly pleased with: the conflicts projection contains **no PHI at all**. Conflict rows are purely structural — pointers to two envelopes and the field they disagree on. The sensitive content stays encrypted in the envelopes. A leaked conflicts table reveals that a disagreement exists, never what it was about.
+
+---
+
+## Encryption and real erasure
+
+Every piece of PHI is encrypted at the application layer with AES-GCM under envelope encryption: a per-patient key-encryption key in AWS KMS wrapping per-record data keys. The GCM additional authenticated data binds `patient_id`, `event_id`, and `codec_version` at fixed length, so a ciphertext cannot be transplanted between patients or events without failing authentication.
+
+Erasure is where most systems quietly cheat. GDPR requires actual erasure; most implementations set a flag. Safiyr uses **two reinforcing layers**:
+
+**Layer 1 — application read-block.** Every decode consults the patient's key record *before issuing any KMS call* and raises immediately if destruction is scheduled. This makes erasure effective the instant it is requested. A clinician opening a still-valid brief link five minutes after a patient withdraws gets a hard refusal, not data.
+
+**Layer 2 — key destruction.** KMS `ScheduleKeyDeletion`, and after the mandatory seven-day window the key is destroyed. Every data key that ever depended on it — live rows, restored backups, exported logs — becomes mathematically unrecoverable.
+
+Neither layer works alone. Layer 1 doesn't protect a backup taken before erasure: restore it and the key still exists. Layer 2 is not effective for seven days, during which the application could keep decrypting. Together they close both gaps.
+
+The cost is one indexed lookup per decode, on a small table Postgres keeps hot. I profiled it. At V1 volumes it is background noise.
+
+---
+
+## Why I wrote the event store myself
+
+I considered the `eventsourcing` library and EventStoreDB, and rejected both.
+
+The event store is the load-bearing layer of the entire system, and I was a solo engineer building toward an HDS audit. In that audit I need to defend every line of the concurrency control, the idempotency semantics, and the projection-trigger ordering. Frameworks abstract away exactly the semantics that matter most under that kind of scrutiny.
+
+The patterns I actually needed — optimistic version checking, idempotent replay, snapshots — are small and thoroughly documented. Owning them cost less than negotiating with a framework's opinions. And the door stays open: if a framework becomes compelling later, that is an evaluation, not a forced rewrite.
+
+The same instinct shows up in the brief tokens. Not JWT — a custom binary format, HMAC-SHA256 over a fixed-length 70-byte body with a 32-byte tag and a format-version byte. JWT carries an enormous algorithm-confusion attack surface for a token that needs to encode four fields and be unforgeable.
+
+---
+
+## How it was built
+
+215 numbered architectural decisions, each a dated record with the reasoning, the alternatives considered, and why they lost. Supersessions and amendments tracked in-line, so the log reads as an argument that evolved rather than a pile of assertions. 24 specs, written before implementation.
+
+The discipline was not ceremony. Working alone across five months, the decision log was how I stayed honest with my past self — and it is the reason I could write this page from memory-free source rather than reconstruction.
+
+Everything ran through `ruff`, `mypy --strict`, and `pytest` locally and in CI, with pre-commit and pre-push hooks. TypeScript ran `strict` plus `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes`. Ten named non-MDR property invariants were pinned by tests, so the regulatory boundary could not regress silently.
+
+Naia ran on Claude Sonnet 5 with thinking disabled to hold the voice latency budget. The voice path was a cascade — VAD, STT, LLM, TTS — rather than a speech-to-speech model, because a cascade gives you an inspectable transcript at the boundary, and provenance requires text you can quote.
+
+---
+
+## Why it stopped
+
+The engineering worked. The business did not.
+
+French health data hosting requires HDS certification. The reimbursement pathways, the procurement channels, the question of who actually pays for a tool like this — all of it turned out to be substantially harder than I had assessed going in. The technical risk I had planned for. The regulatory-commercial risk I underestimated.
+
+In August 2026 I decommissioned the infrastructure. Scaleway instance, AWS resources, KMS key — all torn down, and the key crypto-shredded, which is the same erasure guarantee I built for patients applied to the project itself.
+
+I stopped paying thirty euros a month for a system with no route to a customer. That was the right call and I would make it faster next time.
+
+## What I would do differently
+
+**Validate the commercial path before building the hard parts.** I could have learned what I learned about French reimbursement in three weeks of conversations. I learned it in five months, having already built the encryption layer.
+
+**Jurisdiction is an architectural input.** I treated "EU healthcare" as one market. It is not. The same product has meaningfully different viability in France, Germany, and Spain, and that should have been a decision record before line one.
+
+**The non-MDR architecture was right regardless.** Of everything here, it is the piece I would keep unchanged. Encoding a regulatory boundary into a schema — so that violating it requires changing the type system rather than merely misbehaving — is a technique I will use again for any constraint that actually matters.
+
+---
+
+*Safiyr's source is private. Everything above describes architecture and reasoning, not implementation. Happy to go deeper in conversation.*
