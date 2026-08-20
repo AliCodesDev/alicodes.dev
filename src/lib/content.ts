@@ -4,6 +4,18 @@ import type { ComponentType } from "react";
 
 export type Collection = "work" | "writing";
 
+/**
+ * An evidence chip: what backs a record, and how strongly. #0013.
+ * `href` is set ONLY when the source is genuinely linkable — the arrow renders
+ * from it, so a chip without a URL never claims to be one.
+ */
+export type Evidence = {
+  label: string;
+  href?: string;
+  /** "live" = live/verified (green). "none" = context, or not yet gathered. */
+  tone?: "live" | "none";
+};
+
 export type Meta = {
   title: string;
   summary: string;
@@ -16,6 +28,10 @@ export type Meta = {
   location?: string;
   status?: string;
   stack?: string[];
+  /** What backs this record on the index and work pages. */
+  evidence?: Evidence[];
+  /** Archive ID, e.g. ACD-WRK-SFY-001. Absent means NOT ISSUED. */
+  archiveId?: string;
   /** writing */
   date?: string;
 };
