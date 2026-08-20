@@ -42,3 +42,11 @@ next-env.d.ts
 
 # claude code local settings
 .claude/settings.local.json
+
+# Visual reference scraped from the web — not ours to redistribute
+frontend-inspo/
+
+# Raw source imagery. The processed output in public/ is what ships.
+assets/
+
+.DS_Store

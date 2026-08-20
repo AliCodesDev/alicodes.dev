@@ -52,10 +52,10 @@ Safiyr, Kirikou, GENIELearn, Benzina: AI-first, with the shipped-product proof
 anchoring the end.
 
 **#0008 — Styling is provisional until the visual direction is chosen
-(2026-08-19).** `globals.css` holds neutral, readable defaults behind a small
-token layer. The intent was to make structure reviewable without quietly
-deciding the visual identity. Design direction remains an open conversation;
-treat everything visual as placeholder.
+(2026-08-19). Superseded by #0014.** `globals.css` holds neutral, readable
+defaults behind a small token layer. The intent was to make structure reviewable
+without quietly deciding the visual identity. Design direction remains an open
+conversation; treat everything visual as placeholder.
 
 **#0009 — The Safiyr case study describes architecture and reasoning only
 (2026-08-19).** No code, no product strategy, no customers. Ali owns the IP
@@ -79,3 +79,55 @@ built so far.
 **#0012 — DNS stays unpointed until there is a deploy worth pointing at
 (2026-08-19).** The domain is registered at Namecheap and untouched. Pointing it
 early means a live URL showing a scaffold.
+
+**#0013 — The site sources its claims (2026-08-20).** Prose claims carry a
+typed, addressable source, shown in a rail beside the text and collapsing to an
+inline disclosure on narrow screens. Sources are graded, because the grades are
+not equivalent: *linkable* (repo, live site, thesis, degree), *citable but not
+linkable* (decision record, private source), and *context* — a link that proves
+the thing exists but says nothing about Ali's role in it. The audience is doing
+claim-verification when they read this, and the site is about provenance work
+anyway: Safiyr's whole argument is that every clinical fact is traceable to the
+sentence it came from, and this is the same idea one level up. The load-bearing
+consequence is that a claim with no source cannot be marked, so an unbacked page
+visibly looks unbacked — the editorial rule enforces itself instead of living in
+a note in `PROGRESS.md`. It also gives the phase-two agent (#0011) a citation
+surface that already exists, rather than one bolted on beside it. Considered
+prose with ordinary inline links (rejected: a link to a repo and a line on a
+résumé render identically, which is precisely the distinction worth making).
+
+**#0014 — The visual direction is an archive record, not a terminal
+(2026-08-20). Supersedes #0008.** Amber `#E3A63F` on near-black `#0A0B09`, with
+green `#43D98A` reserved to mean live/verified and nothing else. Two families:
+Space Mono for system voice — field labels, IDs, chips, nav, footers — and
+Archivo for display *and* long-form body. Numbered field rows, an archive ID as
+anchor, bracket nav, notched panels, corner status meta, registry footer.
+The reference set Ali collected split into two groups, and the split decided
+this: *records* (a colony personnel database, a character dossier) have an
+information architecture — typed fields, an addressable ID, a subject whose
+attributes can be looked up, which is structurally the same object as #0013's
+rail. *Costume* (fake shell prompts, ASCII art, phosphor-green CRT) dresses an
+ordinary page in terminal clothes. Taking the record and leaving the costume is
+what keeps this clear of #0001's worry that retro reads "frontend hobbyist" — a
+dossier is a claim about rigour, a terminal skin is a claim about nostalgia.
+Rejected green-led (the most-produced look in the genre, and near-black plus one
+acid accent is a stock default — hardest to make read as a decision) and
+all-mono including body copy (Safiyr is ~2,500 words of argument; mono at that
+length is a readability tax on exactly the reader we are trying to convince,
+and the dossier references get away with it only because their bio panels are
+eighty words).
+
+**#0015 — The portrait is a deterministic dither, not a generated image
+(2026-08-20).** `scripts/dither-portrait.py` takes the raw passport photo and
+produces a 1-bit Floyd–Steinberg dither, white-on-transparent, tinted at render
+time through a CSS mask. No image model touches it. The decisive reason is
+fidelity: a generative pass subtly redraws a face — jaw, eye spacing, hairline —
+and the person reading this site may later be sitting across from him. Three
+lesser reasons: tinting in CSS keeps the portrait coupled to the palette token
+instead of freezing it, a dither computed against the real pixel grid stays
+sharp where a baked halftone gets resampled to mush at 2x, and the whole thing
+is rerunnable. The raw photo stays gitignored under `assets/`; only the
+processed output ships. Considered an image-to-image restyle at low strength
+(rejected: still redraws the face, and it would have to be regenerated on every
+palette change).
+

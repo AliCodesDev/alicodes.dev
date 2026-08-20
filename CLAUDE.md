@@ -34,6 +34,15 @@ take credibility.
 
 ## Style
 
-Styling in `src/app/globals.css` is **provisional** — neutral defaults chosen so
-structure could be reviewed before the visual direction was decided. See
-`DECISIONS.md` #0008. Don't treat it as the design.
+The visual direction is decided but **not yet built**. `src/app/globals.css`
+still holds the old provisional neutral defaults — don't treat it as the design.
+
+What to build instead is `DECISIONS.md` #0013 and #0014, with the mockups linked
+from `PROGRESS.md`. In short: amber `#E3A63F` on near-black `#0A0B09`; green
+`#43D98A` means live/verified and nothing else; Space Mono is the system voice
+(labels, IDs, chips, nav, footers) and Archivo is display *and* body prose.
+Claims carry typed sources in a rail — and a claim with no source gets no mark,
+which is the point, not an oversight.
+
+`/resume` stays plain and unstyled (#0010). It is deliberately outside all of
+this.
