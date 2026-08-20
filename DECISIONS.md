@@ -131,3 +131,38 @@ processed output ships. Considered an image-to-image restyle at low strength
 (rejected: still redraws the face, and it would have to be regenerated on every
 palette change).
 
+**#0016 — `/resume` is isolated by its own root layout (2026-08-20).** #0010
+kept the résumé plain by convention; this makes it structural. The themed site
+and `/resume` are separate route groups with separate root layouts, so
+`/resume` has its own `<html>`, its own stylesheet, and no path by which the
+archive theme can reach it. Considered scoping the dark theme to a wrapper
+class inside one shared layout (rejected: the theme needs `body` to carry the
+background and the scanline overlay, so "don't theme the résumé" would have
+stayed a rule someone has to remember rather than something the tree enforces —
+and the first person to add a global rule would have broken it silently). Cost
+is a full page load when navigating between `/resume` and the rest of the site,
+which is unobjectionable for a page people arrive at, read, and forward.
+
+**#0017 — Claims reference declared sources by id; numbering is positional
+(2026-08-20).** A `Sourced` group declares its sources in order; a `Claim`
+names one by id and renders the marker for that source's position. Numbering
+comes from the declaration, not from where the claim sits in the prose, so
+moving a sentence does not renumber the rail. The load-bearing part is the
+failure mode: a claim whose id matches no citable source renders as plain prose
+with no mark, and a *context* source can never back a claim at all. That is
+#0013's editorial rule executing rather than being remembered. Considered
+explicit numbers in the markup (rejected: they go stale the moment a source is
+inserted) and auto-registration in document order (rejected: it makes rail
+order depend on render order, and leaves no way to declare a source that no
+claim happens to cite yet).
+
+**#0018 — A link's arrow renders from its URL, never from its grade
+(2026-08-20).** Evidence chips and rail entries show the `→` only when an
+`href` is actually present. The artboards draw `AliCodesDev/kirikou →` and
+Benzina's `live →`, but no repo or deployment URL exists anywhere in this repo,
+so those render as plain chips that still carry their grade and colour. This
+diverges from the mockups deliberately: on a site whose whole argument is that
+claims are traceable, an arrow that leads nowhere — or 404s in front of a
+hiring manager — costs more than the missing affordance. The URLs are a
+`TODO(ali)` in each content file, and adding one turns the chip into a link
+with no other change.

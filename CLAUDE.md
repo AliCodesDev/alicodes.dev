@@ -34,15 +34,18 @@ take credibility.
 
 ## Style
 
-The visual direction is decided but **not yet built**. `src/app/globals.css`
-still holds the old provisional neutral defaults — don't treat it as the design.
+The visual direction is `DECISIONS.md` #0013 and #0014, and `globals.css` now
+holds it: amber `#E3A63F` on near-black `#0A0B09`; green `#43D98A` means
+live/verified and nothing else; Space Mono is the system voice (labels, IDs,
+chips, nav, footers) and Archivo is display *and* body prose. Claims carry
+typed sources in a rail — and a claim with no source gets no mark, which is the
+point, not an oversight.
 
-What to build instead is `DECISIONS.md` #0013 and #0014, with the mockups linked
-from `PROGRESS.md`. In short: amber `#E3A63F` on near-black `#0A0B09`; green
-`#43D98A` means live/verified and nothing else; Space Mono is the system voice
-(labels, IDs, chips, nav, footers) and Archivo is display *and* body prose.
-Claims carry typed sources in a rail — and a claim with no source gets no mark,
-which is the point, not an oversight.
+It is built on `/` only. The remaining themed routes still carry the old
+provisional `u-*` classes; extend the design onto them rather than reviving
+those. Take exact values from the artboards, not from screenshots — `PROGRESS.md`
+links the canvas and the `design` skill reads it back with `--extract`.
 
 `/resume` stays plain and unstyled (#0010). It is deliberately outside all of
-this.
+this, and now has its own root layout under `src/app/(plain)/` so the theme
+cannot reach it (#0016).

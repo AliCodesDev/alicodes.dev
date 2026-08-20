@@ -16,19 +16,19 @@ Twelve routes, all prerendering static:
 
 | Route | State |
 |---|---|
-| `/` | Hero, reserved slot for the agent, selected work |
-| `/work` | Index, curated order |
-| `/work/safiyr` | **Written.** The flagship case study |
+| `/` | **Built.** The personnel record, sourced, with the agent slot |
+| `/work` | Index, curated order — still on the old provisional classes |
+| `/work/safiyr` | **Written**, not yet in the design |
 | `/work/kirikou` | Stub — draft |
 | `/work/genielearn` | Stub — draft |
 | `/work/benzina` | Stub — draft |
-| `/writing` | Index, empty in production |
+| `/writing` | Index, empty in production — old classes |
 | `/writing/placeholder` | Stub — draft |
-| `/about` | Written from the CV |
-| `/resume` | Written, plain and print-friendly |
+| `/about` | Written from the CV — old classes |
+| `/resume` | Plain and print-friendly. Own root layout, outside the design |
 
-**The design direction is settled and not yet built.** `DECISIONS.md` #0013,
-#0014, #0015. Two layers, decided separately:
+**The design is built as far as the homepage.** `DECISIONS.md` #0013, #0014,
+#0015. Two layers, decided separately:
 
 - **Sourced** (#0013) — claims carry typed, addressable sources in a rail.
   Grades matter: linkable (repo, live, thesis, degree), citable-but-private
@@ -39,13 +39,27 @@ Twelve routes, all prerendering static:
   Archivo is display and body. Numbered field rows, archive IDs, notched
   panels, bracket nav.
 
-`src/app/globals.css` is still the old provisional neutral styling. Nothing
-visual has been implemented yet.
+Standing as of `2532ae4`:
 
-**Mockups:** nine artboards on a design canvas, including the homepage record,
-the active-claim state, Safiyr, GENIELearn before and after its evidence lands,
-mobile, and a type-and-colour specimen. A second page holds the two superseded
-v1 frames.
+- `src/app/globals.css` — record tokens and type, lifted from the `Spec2`
+  artboard. The provisional neutral defaults are gone.
+- `src/components/site-chrome.tsx` — status bar, bracket nav, registry footer,
+  and `RecordFrame`, the page template every artboard shares.
+- `src/components/sourced.tsx` — `Claim`, `Sourced`, the rail and its active
+  state. #0017.
+- `src/components/record.tsx` — panel, numbered field row, portrait, chips.
+- `/` is built. Every other themed route still carries the old provisional
+  `u-*` classes and renders unstyled until the work-page pass lands.
+
+Archive IDs follow `ACD-WRK-<mnemonic>-<order>` and live in each content file's
+`metadata.archiveId`. A record with none reads NOT ISSUED — which is what
+GENIELearn's shows, deliberately.
+
+**Mockups:** nine artboards on a design canvas, across two pages. Page
+"Archive" holds seven — the homepage record, the active-claim state, Safiyr,
+GENIELearn before and after its evidence lands, mobile, and a type-and-colour
+specimen. Page "Sourced — v1" holds the other two, both superseded; ignore
+them.
 
 > https://claude.ai/code/artifact/97e5a4fe-5736-4171-a3b7-adbd14414fcf
 
@@ -56,10 +70,11 @@ with the `design` skill's `--extract`.
 
 ## What's next
 
-1. **Build the design.** Replace `globals.css` and the components with #0014.
-   Order that makes sense: tokens and type first, then `site-chrome.tsx`, then
-   the record panel on `/`, then the claim/source components, then the work
-   pages. `/resume` stays plain — #0010 is untouched by any of this.
+1. **Finish the design build.** Wire `Claim`/`Source` into
+   `src/mdx-components.tsx`, then the work pages and `/work/safiyr`, then
+   `/work`, `/writing` and `/about`, which are still unstyled. `/resume` stays
+   plain — #0010, now enforced by its own root layout rather than by
+   convention (#0016).
 2. **Kirikou write-up**, once the project itself is finished.
 3. **The ask-me agent** (#0011). The source rail is its citation surface, so
    it lands inside the design rather than beside it.
@@ -69,6 +84,18 @@ with the `design` skill's `--extract`.
 - **Safiyr decision-record numbers.** The mockups cite `[NNN]` placeholders.
   Ali has 215 numbered records; the real numbers for the schema-level MDR
   boundary and the rejected classifier-gate decision need filling in.
+- **Kirikou and Benzina URLs.** Neither a repo nor a deployment URL exists
+  anywhere in this repo, so their evidence chips render without an arrow
+  (#0018). `TODO(ali)` in each content file; one line each makes them links.
+- **Mobile is written but not seen.** The rail collapses to a `<details>`
+  disclosure under 900px and the record stacks, but Chrome clamped the window
+  width during the build session, so none of it has been looked at. Check it
+  on a real phone width before this ships.
+- **No mobile nav.** The mobile artboard shows a hamburger; the five bracket
+  items wrap to a second line instead. Fine for now, but it is a divergence.
+- **Case-study rail entries are cited, not linked** — the artboards render them
+  plain, so `[1]`/`[2]` on the homepage do not navigate to the Safiyr page.
+  Faithful to the mockups; worth a second look once the work pages exist.
 - **Safiyr diagram** — the provenance pipeline SVG exists only in a Claude
   artifact, not yet in the site page. Needs either an MDX-imported component or
   inline SVG. Do it when the design is built.
@@ -77,7 +104,7 @@ with the `design` skill's `--extract`.
   whether the demo's pinned specialty should be mentioned at all.
 - **`resume.pdf`** does not exist yet. `/resume` links to it. Drop it in
   `public/`.
-- **Education dates** — `TODO(ali)` in `src/app/resume/page.tsx`. The CV has the
+- **Education dates** — `TODO(ali)` in `src/app/(plain)/resume/page.tsx`. The CV has the
   MSc starting and ending before the BEng. Now public on the resume page.
 - **GENIELearn evidence — path identified, not yet gathered.** The thesis on
   the UPF record is the piece that unblocks the page: authored, dated, titled,
