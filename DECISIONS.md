@@ -80,9 +80,13 @@ built so far.
 (2026-08-19).** The domain is registered at Namecheap and untouched. Pointing it
 early means a live URL showing a scaffold.
 
-**#0013 — The site sources its claims (2026-08-20).** Prose claims carry a
-typed, addressable source, shown in a rail beside the text and collapsing to an
-inline disclosure on narrow screens. Sources are graded, because the grades are
+**#0013 — The site sources its claims (2026-08-20). Presentation superseded by
+#0019; the rule stands.** Prose claims carry a typed, addressable source. This
+entry describes it as a rail beside the text collapsing to an inline disclosure
+on narrow screens, which is how it was built on 2026-08-20 — #0019 moved that
+rail into the panel, where a claim now *opens* its source rather than merely
+highlighting it. Everything below about grading and about unbacked claims is
+unchanged. Sources are graded, because the grades are
 not equivalent: *linkable* (repo, live site, thesis, degree), *citable but not
 linkable* (decision record, private source), and *context* — a link that proves
 the thing exists but says nothing about Ali's role in it. The audience is doing
@@ -115,7 +119,9 @@ acid accent is a stock default — hardest to make read as a decision) and
 all-mono including body copy (Safiyr is ~2,500 words of argument; mono at that
 length is a readability tax on exactly the reader we are trying to convince,
 and the dossier references get away with it only because their bio panels are
-eighty words).
+eighty words). *Note:* this entry lists bracket nav among the direction's
+elements. #0019 replaced it on `/` with folder tabs; the bracket nav survives
+only for the themed routes that are still unstyled.
 
 **#0015 — The portrait is a deterministic dither, not a generated image
 (2026-08-20).** `scripts/dither-portrait.py` takes the raw passport photo and
@@ -165,7 +171,10 @@ diverges from the mockups deliberately: on a site whose whole argument is that
 claims are traceable, an arrow that leads nowhere — or 404s in front of a
 hiring manager — costs more than the missing affordance. The URLs are a
 `TODO(ali)` in each content file, and adding one turns the chip into a link
-with no other change.
+with no other change. *Extended 2026-08-22:* a chip can now declare
+`tone: "link"` — linkable grade, URL still pending — so it carries the amber of
+a link without the arrow of one. LinkedIn and Instagram use it. This is the
+same rule stated positively: the grade is the colour, the arrow is the URL.
 
 **#0019 — The homepage is a personnel dossier beside one panel (2026-08-22).
 Supersedes #0001's work-showcase framing.** `/` stops being a scrolling

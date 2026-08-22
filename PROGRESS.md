@@ -9,10 +9,11 @@ Running state. Updated at the end of every session. Detail lives in
 
 ## Where we are
 
-Scaffold is built and green. Next.js 16 App Router, TypeScript, Tailwind v4,
-MDX content. `pnpm dev` is all it takes to run.
+The design is built and merged to `main` (PR #1, merge commit `a31c3fd`).
+Next.js 16 App Router, TypeScript, Tailwind v4, MDX content. `pnpm dev` is all
+it takes to run. Nothing is deployed — #0012 still holds.
 
-Eleven routes, all prerendering static:
+Nine routes plus `/_not-found`, all prerendering static:
 
 | Route | State |
 |---|---|
@@ -36,7 +37,7 @@ folder tabs on the record's top edge. The panel is the page's only content
 surface, and three gestures feed it — a marked claim opens its source, a tab
 renders a section, and the query line will return an agent answer (#0011).
 
-Standing as of this session:
+Standing as of `a31c3fd`:
 
 - `src/app/(archive)/page.tsx` — assembles every source, section and row on the
   server from `content/` and `src/lib/resume.ts`, then hands them to the client
@@ -49,7 +50,10 @@ Standing as of this session:
   commits. The rail-as-column is gone; the panel replaced it.
 - `src/components/record.tsx` — panel, numbered field row, portrait, chips.
 - `src/components/site-chrome.tsx` — status bar, registry footer, and a bracket
-  nav that is now optional and unused by `/`.
+  nav that is now optional. `/` composes the pieces directly, so `RecordFrame`
+  is currently unused; it is kept for the themed routes that still need a page
+  template. `Pending` in `sourced.tsx` is unused for the same reason — it is the
+  evidence-not-yet-gathered block GENIELearn's page will want.
 
 The three homepage sources quote out of `content/work/safiyr.mdx`'s
 `metadata.pulls` and `src/lib/resume.ts`; a missing pull fails the build (#0020).
@@ -58,10 +62,12 @@ Archive IDs follow `ACD-WRK-<mnemonic>-<order>` and live in each content file's
 `metadata.archiveId`. A record with none reads NOT ISSUED — which is what
 GENIELearn's shows, deliberately.
 
-**Mockups:** the homepage was built from the `design_handoff_homepage_dossier`
-bundle in the parent directory — a README, an interactive `.dc.html` prototype,
-and its runtime. The nine earlier artboards on the design canvas still govern
-the work pages:
+**Mockups:** the homepage was built from a `design_handoff_homepage_dossier`
+bundle — a README, an interactive `.dc.html` prototype, and its runtime. That
+bundle sits *outside* this repo, in the directory above it, so it will not
+survive a fresh clone; the built homepage and #0019–#0024 are the durable
+record of it. The nine earlier artboards on the design canvas still govern the
+work pages:
 
 > https://claude.ai/code/artifact/97e5a4fe-5736-4171-a3b7-adbd14414fcf
 
@@ -138,8 +144,11 @@ session can read it back with the `design` skill's `--extract`.
 
 ## Housekeeping outside this repo
 
-- `AliCodesDev/wazife` has `.claude/projects/.../memory/user_profile.md`
-  committed and public. Read it, then decide.
-- `wazife`'s README is still the stock Vite template.
+- ~~`AliCodesDev/wazife` has Claude memory files committed and public.~~ Done
+  2026-08-22: contents were benign (a note that he is job hunting and why he
+  built Wazife), so no history rewrite. Untracked and `.claude/` gitignored in
+  commit `68d8d07`. Old commits still hold a copy, which is fine for that text.
+- `wazife`'s README is still the stock Vite template. Public, and linked from
+  this site's Contact section, so it is part of what a recruiter reads.
 - GitHub profile has no bio, no location, no link. Pin Safiyr's public
   counterparts: Kirikou, Benzina, Wazife.

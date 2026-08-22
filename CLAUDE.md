@@ -31,6 +31,12 @@ take credibility.
   `node_modules/next/dist/docs/` before writing routing or config code. `params`
   is a `Promise` and must be awaited.
 - `create-next-app` refuses to scaffold into a non-empty directory.
+- **A running `next dev` poisons `pnpm build` if you check out an older
+  commit.** The dev server regenerates `.next/dev/types/validator.ts` against
+  whatever is on disk, so checking out a commit from before the `(archive)` /
+  `(plain)` route groups leaves the validator importing `src/app/page.js`, and
+  the next build fails type-checking on a file that no longer exists. It is a
+  stale artifact, never a real error: `rm -rf .next/dev/types` and rebuild.
 
 ## Style
 
