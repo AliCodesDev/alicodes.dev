@@ -7,17 +7,30 @@ function cx(...parts: (string | false | null | undefined)[]) {
   return parts.filter(Boolean).join(" ");
 }
 
-/** Notched panel. The 1px rule is a padded parent so the notch keeps its edge. */
+/**
+ * Notched panel. The 1px rule is a padded parent so the notch keeps its edge.
+ *
+ * `inner` replaces the default padding wholesale — the dossier sets its own,
+ * and the record panel has none at all because its head, body and foot each
+ * carry theirs and the body has to be the only thing that scrolls.
+ */
 export function Panel({
   children,
   className,
+  inner,
 }: {
   children: ReactNode;
   className?: string;
+  inner?: string;
 }) {
   return (
     <div className={cx("panel notch", className)}>
-      <div className="panel-in notch px-5 py-5 sm:px-6 sm:py-[22px]">
+      <div
+        className={cx(
+          "panel-in notch",
+          inner ?? "px-5 py-5 sm:px-6 sm:py-[22px]",
+        )}
+      >
         {children}
       </div>
     </div>
@@ -67,6 +80,7 @@ export function Portrait({
           role="img"
           aria-label="Ali Ezzeddine — dithered portrait"
         />
+        <div className="portrait-scan" aria-hidden="true" />
       </div>
       <div
         className="lbl mt-[7px] text-center"
@@ -97,7 +111,12 @@ export function ArchiveId({ id }: { id?: string }) {
   return <div className="val val-a archive-id">{id}</div>;
 }
 
-/** Evidence chips. The arrow renders from `href`, so it never over-promises. */
+/**
+ * Evidence chips. The arrow renders from `href`, so it never over-promises —
+ * #0018. A chip that is linkable and nothing more goes amber for the same
+ * reason a linkable source does; a chip that is *live* stays green, because
+ * green outranks amber and a live thing with a URL is still live.
+ */
 export function Chips({ items }: { items: Evidence[] }) {
   return (
     <div className="flex flex-wrap gap-1">
@@ -106,6 +125,7 @@ export function Chips({ items }: { items: Evidence[] }) {
           "chip",
           item.tone === "live" && "chip-g",
           item.tone === "none" && "chip-n",
+          (item.tone === "link" || (item.href && !item.tone)) && "chip-a",
         );
         return item.href ? (
           <a key={item.label} className={className} href={item.href}>

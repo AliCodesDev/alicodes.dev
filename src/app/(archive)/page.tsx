@@ -1,195 +1,191 @@
-import Link from "next/link";
-import { RecordFrame, SystemOnline } from "@/components/site-chrome";
-import { ArchiveId, Chips, Field, Panel, Portrait } from "@/components/record";
-import { Claim, Sourced, type Source } from "@/components/sourced";
-import { listEntries } from "@/lib/content";
+import {
+  RecordBanner,
+  RegistryFooter,
+  SiteHeader,
+  SystemOnline,
+} from "@/components/site-chrome";
+import { Claim, type Source } from "@/components/sourced";
+import { Dossier, type Section, type TabKey } from "@/components/dossier";
+import {
+  listEntries,
+  loadEntry,
+  type Evidence,
+  type Meta,
+  type Pull,
+} from "@/lib/content";
+import { BENG } from "@/lib/resume";
 
 /*
- * The personnel record. Artboard 1 on the design canvas.
+ * The personnel record. DECISIONS.md #0019 — the dossier is the subject, and
+ * the panel beside it is everything you can look up about him.
  *
- * The rail's case-study entries are cited, not linked — that is the artboard's
- * call, and #0013's whole point is that those grades render differently. The
- * index below carries the links.
+ * Everything the panel shows is assembled here, on the server, from the content
+ * files and the résumé data, and handed to the client component as props. The
+ * page stays prerendered and the MDX files stay the single source of truth
+ * (#0002); the client component owns nothing but which view is open.
  */
-const SOURCES: Source[] = [
-  { id: "safiyr", title: "Safiyr — full record", kind: "case study" },
-  {
-    id: "provenance",
-    title: "Safiyr § provenance",
-    kind: "case study",
-    // Verbatim from content/work/safiyr.mdx, § "Provenance: verbatim or nothing".
-    quote:
-      "Facts marked as direct quotes are enforced verbatim against the source text, not merely requested to be.",
-  },
-  {
-    id: "beng",
-    title: "BEng elec. eng.",
-    kind: "résumé",
-    href: "/resume",
-  },
+
+/**
+ * A source's quote comes out of the record it quotes. A missing one is a claim
+ * with nothing behind it, so it fails the build rather than rendering an empty
+ * blockquote in front of a hiring manager — the same argument as #0017.
+ */
+function pull(meta: Meta, file: string, id: string): Pull {
+  const found = meta.pulls?.[id];
+  if (!found) {
+    throw new Error(
+      `${file} declares no pull "${id}", but the homepage cites it. Either add it to that file's metadata.pulls or stop citing it.`,
+    );
+  }
+  return found;
+}
+
+/**
+ * Where to find him, graded with the same vocabulary as any source: all three
+ * are linkable, and the arrow renders only where a URL actually exists. #0018.
+ *
+ * TODO(ali): LinkedIn and Instagram URLs pending. Adding an `href` to either
+ * turns the chip into a link and changes nothing else about it — that is the
+ * whole point of grading the chip separately from its arrow.
+ */
+const PRESENCE: Evidence[] = [
+  { label: "github / alicodesdev", href: "https://github.com/AliCodesDev" },
+  { label: "linkedin", tone: "link" },
+  { label: "instagram", tone: "link" },
 ];
 
 export default async function HomePage() {
   const work = await listEntries("work");
-  const filed = String(work.length).padStart(2, "0");
+  const safiyr = await loadEntry("work", "safiyr");
+
+  const sources: Source[] = [
+    {
+      id: "safiyr",
+      title: "Safiyr — full record",
+      kind: "case study",
+      ...pull(safiyr.meta, "content/work/safiyr.mdx", "safiyr"),
+    },
+    {
+      id: "provenance",
+      title: "Safiyr § provenance",
+      kind: "case study",
+      ...pull(safiyr.meta, "content/work/safiyr.mdx", "provenance"),
+    },
+    {
+      id: "beng",
+      title: "BEng elec. eng.",
+      kind: "résumé",
+      backs: "I came up through electrical engineering",
+      // Quoted out of the résumé data, not retyped beside it. #0020.
+      quote: `${BENG.title} — ${BENG.org}.`,
+      locus: "/resume → education",
+      href: "/resume",
+      note: "Linkable. Plain page, outside the archive theme.",
+    },
+  ];
+
+  const sections: Record<TabKey, Section> = {
+    work: {
+      label: `Work / ${String(work.length).padStart(2, "0")} records`,
+      rows: work.map((entry, i) => ({
+        n: String(i + 1).padStart(2, "0"),
+        title: entry.meta.title,
+        href: `/work/${entry.slug}`,
+        summary: entry.meta.summary,
+        chips: entry.meta.evidence ?? [],
+      })),
+      note: "Curated order, never alphabetical. Open one to read its record.",
+    },
+    resume: {
+      label: "Résumé /",
+      rows: [
+        {
+          n: "01",
+          title: "Résumé — plain page",
+          href: "/resume",
+          summary:
+            "Deliberately outside this design: no chrome, no theme, print-friendly. Some readers are in a hurry or forwarding it internally.",
+          chips: [
+            { label: "open /resume", tone: "live", href: "/resume" },
+            // TODO(ali): drop resume.pdf into public/ and this becomes a link.
+            { label: "pdf pending", tone: "none" },
+          ],
+        },
+      ],
+      note: "The one page that ignores everything else on this site.",
+    },
+    contact: {
+      label: "Contact /",
+      rows: [
+        {
+          n: "01",
+          title: "ali@alicodes.dev",
+          href: "mailto:ali@alicodes.dev",
+          summary: "Direct. Fastest route to a reply.",
+          chips: [
+            { label: "email", tone: "live", href: "mailto:ali@alicodes.dev" },
+          ],
+        },
+        {
+          n: "02",
+          title: "github / alicodesdev",
+          href: "https://github.com/AliCodesDev",
+          summary:
+            "Kirikou, Benzina, Wazife. Inspectable code for the same class of problem as the private work.",
+          chips: [
+            {
+              label: "repo",
+              tone: "live",
+              href: "https://github.com/AliCodesDev",
+            },
+          ],
+        },
+        {
+          n: "03",
+          title: "Beirut, LB",
+          summary: "GMT+3. Open to remote and relocation.",
+          chips: [{ label: "node" }],
+        },
+      ],
+      note: "Every route in, graded like any other source.",
+    },
+  };
+
+  /*
+   * The prose is rendered here so the copy sits with the page rather than
+   * inside the state machine. Its `Claim`s pick up the panel's context by tree
+   * position once React hydrates.
+   */
+  const summary = (
+    <p className="prose">
+      Five months as sole engineer on <Claim src="safiyr">Safiyr</Claim>, an
+      event-sourced clinical system where{" "}
+      <Claim src="provenance">
+        every extracted fact is traceable to the sentence it came from
+      </Claim>
+      . Before that, retrieval and evaluation work in a university research lab.
+      I came up through <Claim src="beng">electrical engineering</Claim>, which
+      is where the rigour comes from.
+    </p>
+  );
 
   return (
-    <RecordFrame
-      segments={["personnel"]}
-      meta={<SystemOnline />}
-      active="index"
-      banner="Personnel record"
-      footer={{
-        left: "alicodes.dev registered record [1_6]",
-        right: "Beirut, LB — 2026",
-      }}
-    >
-      <Sourced sources={SOURCES}>
-        <Panel>
-          <div
-            className="flex justify-between gap-6 pb-[14px]"
-            style={{ borderBottom: "1px solid var(--rule)" }}
-          >
-            <div>
-              <div className="lbl">1_6 /</div>
-              <div
-                className="val"
-                style={{ fontSize: "17px", letterSpacing: "0.04em" }}
-              >
-                Ezzeddine, Ali
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="lbl">Archive# /</div>
-              <ArchiveId id="ACD-2026-AI-0001" />
-            </div>
-          </div>
-
-          <div className="mt-[18px] flex flex-col gap-5 sm:flex-row sm:gap-[22px]">
-            <Portrait />
-            <div className="grid flex-1 grid-cols-1 content-start gap-x-5 gap-y-4 sm:grid-cols-2">
-              <Field n={2} label="Node">Beirut, LB</Field>
-              <Field n={5} label="Status" tone="g">Open to roles</Field>
-              <Field n={3} label="Discipline">Software / AI eng</Field>
-              <Field n={6} label="Records">{filed} filed</Field>
-              <Field n={4} label="Origin">Electrical eng</Field>
-              <Field n={7} label="Lang">AR / EN / FR</Field>
-            </div>
-          </div>
-
-          <div
-            className="mt-[22px] pt-4"
-            style={{ borderTop: "1px solid var(--rule)" }}
-          >
-            <div className="lbl mb-[11px]">Summary /</div>
-            <p className="prose">
-              Five months as sole engineer on{" "}
-              <Claim src="safiyr">Safiyr</Claim>, an event-sourced clinical
-              system where{" "}
-              <Claim src="provenance">
-                every extracted fact is traceable to the sentence it came from
-              </Claim>
-              . Before that, retrieval and evaluation work in a university
-              research lab. I came up through{" "}
-              <Claim src="beng">electrical engineering</Claim>, which is where
-              the rigour comes from.
-            </p>
-          </div>
-        </Panel>
-      </Sourced>
-
-      {/* The agent lands here. #0011 — the rail is its citation surface. */}
-      <div className="record-grid mt-[26px]">
-        <Panel>
-          <div className="lbl" style={{ color: "var(--green)" }}>
-            Query /
-          </div>
-          <div
-            className="mt-3 flex items-center justify-between gap-3 px-[13px] py-[11px]"
-            style={{ border: "1px solid var(--rule)" }}
-          >
-            <span
-              className="mono"
-              style={{
-                fontSize: "12.5px",
-                letterSpacing: "0.03em",
-                color: "var(--ink-faint)",
-              }}
-            >
-              &gt; what has he actually shipped?
-            </span>
-            <span
-              className="mono"
-              style={{ fontSize: "12.5px", color: "var(--green)" }}
-            >
-              &#9646;
-            </span>
-          </div>
-          <div
-            className="lbl mt-[11px]"
-            style={{ letterSpacing: "0.1em" }}
-          >
-            Answers cite into archive ref. Phase two.
-          </div>
-        </Panel>
-      </div>
-
-      <div className="record-grid mt-[38px]">
-        <div
-          className="lbl pb-2"
-          style={{ borderBottom: "1px solid var(--rule)" }}
-        >
-          Index / selected records
-        </div>
-        <div
-          className="lbl hidden pb-2 min-[900px]:block"
-          style={{ borderBottom: "1px solid var(--rule)" }}
-        >
-          Evidence /
-        </div>
-      </div>
-
-      {work.map((entry, i) => (
-        <div
-          key={entry.slug}
-          className="record-grid mt-[18px] pt-[18px]"
-          style={i > 0 ? { borderTop: "1px solid var(--rule)" } : undefined}
-        >
-          <div className="flex items-baseline gap-[14px]">
-            <span
-              className="mono"
-              style={{
-                fontSize: "11px",
-                color: "var(--amber-dim)",
-                letterSpacing: "0.08em",
-              }}
-            >
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <div className="min-w-0">
-              <Link
-                href={`/work/${entry.slug}`}
-                className="mono uppercase"
-                style={{ fontSize: "16px", letterSpacing: "0.06em" }}
-              >
-                {entry.meta.title}
-              </Link>
-              <p
-                className="mt-[5px]"
-                style={{
-                  fontSize: "14.5px",
-                  lineHeight: 1.6,
-                  color: "var(--ink-dim)",
-                  textWrap: "pretty",
-                }}
-              >
-                {entry.meta.summary}
-              </p>
-            </div>
-          </div>
-          {entry.meta.evidence ? <Chips items={entry.meta.evidence} /> : <div />}
-        </div>
-      ))}
-    </RecordFrame>
+    <>
+      <SiteHeader segments={["personnel"]} meta={<SystemOnline />} />
+      <main className="dossier-col">
+        <RecordBanner>Personnel record</RecordBanner>
+        <Dossier
+          sources={sources}
+          sections={sections}
+          summary={summary}
+          presence={PRESENCE}
+        />
+        <RegistryFooter
+          className="mt-[34px]"
+          left="alicodes.dev registered record [1_7]"
+          right="Beirut, LB — 2026"
+        />
+      </main>
+    </>
   );
 }

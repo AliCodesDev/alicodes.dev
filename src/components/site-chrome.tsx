@@ -11,13 +11,16 @@ import type { ReactNode } from "react";
  * inferring them from the route. Keeps every page a server component.
  */
 
-type NavKey = "index" | "work" | "writing" | "about" | "resume";
+type NavKey = "index" | "work" | "resume";
 
+/*
+ * `/about` is gone — its content is field rows in the record now (#0019) — and
+ * `/writing` stays out until it has something in it. The homepage passes no
+ * `active` at all: its navigation is the folder tabs above the record.
+ */
 const NAV: { key: NavKey; href: string; label: string }[] = [
   { key: "index", href: "/", label: "Index" },
   { key: "work", href: "/work", label: "Work" },
-  { key: "writing", href: "/writing", label: "Writing" },
-  { key: "about", href: "/about", label: "About" },
   { key: "resume", href: "/resume", label: "Résumé" },
 ];
 
@@ -41,7 +44,8 @@ export function SiteHeader({
   /** Path shown in the status bar, e.g. ["work", "safiyr"]. */
   segments: string[];
   meta: ReactNode;
-  active: NavKey;
+  /** Omit to render the status bar alone, with no bracket nav under it. */
+  active?: NavKey;
 }) {
   const path = `\\\\ALICODES.DEV\\ARCHIVE\\${segments
     .map((s) => `${s.toUpperCase()}\\`)
@@ -62,19 +66,21 @@ export function SiteHeader({
         <span className="shrink-0">{meta}</span>
       </div>
 
-      <nav className="flex flex-wrap gap-x-[9px] gap-y-2 px-4 pt-[14px] sm:px-7">
-        {NAV.map((item) =>
-          item.key === active ? (
-            <span key={item.key} className="navb navb-on">
-              [ x {item.label} ]
-            </span>
-          ) : (
-            <Link key={item.key} href={item.href} className="navb">
-              [ {item.label} ]
-            </Link>
-          ),
-        )}
-      </nav>
+      {active === undefined ? null : (
+        <nav className="flex flex-wrap gap-x-[9px] gap-y-2 px-4 pt-[14px] sm:px-7">
+          {NAV.map((item) =>
+            item.key === active ? (
+              <span key={item.key} className="navb navb-on">
+                [ x {item.label} ]
+              </span>
+            ) : (
+              <Link key={item.key} href={item.href} className="navb">
+                [ {item.label} ]
+              </Link>
+            ),
+          )}
+        </nav>
+      )}
     </header>
   );
 }
@@ -83,13 +89,15 @@ export function SiteHeader({
 export function RegistryFooter({
   left,
   right,
+  className = "mt-10",
 }: {
   left: ReactNode;
   right: ReactNode;
+  className?: string;
 }) {
   return (
     <footer
-      className="mono mt-10 flex flex-wrap justify-between gap-x-6 gap-y-2 pt-3 uppercase"
+      className={`mono flex flex-wrap justify-between gap-x-6 gap-y-2 pt-3 uppercase ${className}`}
       style={{
         fontSize: "9px",
         letterSpacing: "0.15em",
@@ -133,7 +141,7 @@ export function RecordFrame({
 }: {
   segments: string[];
   meta: ReactNode;
-  active: NavKey;
+  active?: NavKey;
   banner?: ReactNode;
   footer: { left: ReactNode; right: ReactNode };
   children: ReactNode;

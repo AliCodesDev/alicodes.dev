@@ -1,27 +1,25 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useId,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, type ReactNode } from "react";
 
 /*
- * Sourced claims and the rail they cite into. DECISIONS.md #0013.
+ * Sourced claims. DECISIONS.md #0013, #0017, #0019.
  *
  * The grades are not equivalent, and the markup keeps them apart:
  *   - linkable        — `href` set. Amber, with an arrow. Repo, live, thesis,
  *                       degree, résumé.
  *   - cited, not linkable — no `href`. Plain ink. Decision record, private source.
  *   - context         — `context: true`. Proves the thing EXISTS, says nothing
- *                       about Ali's role in it. Unnumbered, below a dashed
- *                       rule, and never citable by a claim.
+ *                       about Ali's role in it. Unnumbered, and never citable
+ *                       by a claim.
  *
  * The load-bearing rule: a claim whose `src` names no citable source renders as
  * plain prose with no mark. An unbacked page visibly looks unbacked. That is
  * the editorial rule enforcing itself, not a rendering bug.
+ *
+ * The rail these used to cite into is gone — #0019 moved it into the panel
+ * beside the record, where a claim now *opens* its source rather than merely
+ * highlighting it. Hover still previews; click commits.
  */
 
 export type Source = {
@@ -29,149 +27,52 @@ export type Source = {
   title: string;
   /** Shown under the title: "case study", "repo", "decision record", … */
   kind: string;
-  /** Set only when the source is genuinely linkable. */
+  /** Set only when the source is genuinely linkable. #0018. */
   href?: string;
-  /** Pulled quote, revealed while the claim is active. */
+  /** The claim this source backs, quoted back to the reader. */
+  backs?: string;
+  /** The sentence pulled from the record. */
   quote?: string;
+  /** Exactly where it sits, e.g. `/work/safiyr § "Provenance"`. */
+  locus?: string;
+  /** How to read this source's grade. */
+  note?: string;
   /** Context, not credit. Never carries a number. */
   context?: boolean;
 };
 
-type Ctx = {
-  group: string;
+export type SourcedCtx = {
+  /** id of the panel a claim drives, for `aria-controls`. */
+  panelId: string;
   number: Record<string, number>;
   byId: Record<string, Source>;
+  /** Hovered or focused — the preview tier. */
   active: string | null;
   setActive: (id: string | null) => void;
+  /** Clicked — the commit tier. Opens the source in the panel. */
+  open: (id: string) => void;
 };
 
-const SourcedContext = createContext<Ctx | null>(null);
+export const SourcedContext = createContext<SourcedCtx | null>(null);
 
 function cx(...parts: (string | false | null | undefined)[]) {
   return parts.filter(Boolean).join(" ");
 }
 
-export function Sourced({
-  sources,
-  label = "Archive ref",
-  children,
-}: {
-  sources: Source[];
-  label?: string;
-  children: ReactNode;
-}) {
-  const group = useId();
-  const [active, setActive] = useState<string | null>(null);
-
-  const cited = sources.filter((s) => !s.context);
-  const context = sources.filter((s) => s.context);
-  const number: Record<string, number> = {};
-  cited.forEach((s, i) => {
-    number[s.id] = i + 1;
-  });
-  const byId: Record<string, Source> = {};
-  sources.forEach((s) => {
-    byId[s.id] = s;
-  });
-
-  return (
-    <SourcedContext.Provider
-      value={{ group, number, byId, active, setActive }}
-    >
-      <div className="record-grid">
-        <div className="min-w-0">{children}</div>
-
-        <details className="rail" open>
-          <summary>
-            <span>
-              {label} /<span className="rail-count"> {cited.length}</span>
-            </span>
-            <svg
-              className="rail-chev"
-              width="12"
-              height="12"
-              viewBox="0 0 14 14"
-              fill="none"
-              stroke="var(--amber)"
-              strokeWidth="1.6"
-              aria-hidden="true"
-            >
-              <path d="M2 5l5 5 5-5" />
-            </svg>
-          </summary>
-
-          <div className="rail-body">
-            {cited.map((source) => (
-              <RefEntry
-                key={source.id}
-                source={source}
-                n={number[source.id]}
-                group={group}
-                active={active}
-              />
-            ))}
-            {context.map((source) => (
-              <div key={source.id} className="ref-context">
-                <RefEntry source={source} group={group} active={active} />
-              </div>
-            ))}
-          </div>
-        </details>
-      </div>
-    </SourcedContext.Provider>
-  );
-}
-
-function RefEntry({
-  source,
-  n,
-  group,
-  active,
-}: {
-  source: Source;
-  n?: number;
-  group: string;
-  active: string | null;
-}) {
-  const on = active === source.id;
-  const off = active !== null && !on;
-
-  const title = source.href ? (
-    <a href={source.href}>{source.title} &rarr;</a>
-  ) : (
-    source.title
-  );
-
-  return (
-    <div
-      id={`${group}-${source.id}`}
-      className={cx("ref", source.href && !source.context && "ref-link", off && "ref-off")}
-    >
-      <div className={cx("ref-n", on && "ref-n-on")}>
-        [{n ?? <>&middot;</>}]
-      </div>
-      <div className={on ? "ref-body" : undefined}>
-        <div className="ref-t">{title}</div>
-        <div className="ref-k">{source.kind}</div>
-        {on && source.quote ? (
-          <div className="ref-quote">&ldquo;{source.quote}&rdquo;</div>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
 /**
- * A claim in prose. `src` names a citable source in the enclosing `Sourced`
- * group; anything else renders unmarked, on purpose.
+ * A claim in prose. `src` names a citable source in the enclosing group;
+ * anything else renders unmarked, on purpose.
+ *
+ * Deliberately a `<span role="button">` rather than a `<button>`: a claim runs
+ * mid-sentence and must fragment across lines, which a button box will not do.
+ * The wrapper is one tab stop covering both the text and its marker, and the
+ * marker is `aria-hidden` so the accessible name is just the claim.
+ *
+ * It carries `aria-controls`, not `aria-describedby`: the source it describes
+ * lives in the panel, and the panel only shows that entry in its REST state,
+ * so a description target would dangle the moment anything else opened.
  */
-export function Claim({
-  src,
-  children,
-}: {
-  src: string;
-  children: ReactNode;
-}) {
+export function Claim({ src, children }: { src: string; children: ReactNode }) {
   const ctx = useContext(SourcedContext);
   const n = ctx?.number[src];
   const known = ctx && n !== undefined;
@@ -189,45 +90,35 @@ export function Claim({
 
   const on = ctx.active === src;
   const off = ctx.active !== null && !on;
-  const bind = {
-    onMouseEnter: () => ctx.setActive(src),
-    onMouseLeave: () => ctx.setActive(null),
-    onFocus: () => ctx.setActive(src),
-    onBlur: () => ctx.setActive(null),
-  };
 
   return (
-    <>
-      <span
-        className={cx("claim", on && "claim-on", off && "claim-off")}
-        tabIndex={0}
-        aria-describedby={`${ctx.group}-${src}`}
-        {...bind}
-      >
+    <span
+      role="button"
+      tabIndex={0}
+      aria-controls={ctx.panelId}
+      className="claim-hit"
+      onClick={() => ctx.open(src)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          ctx.open(src);
+        }
+      }}
+      onMouseEnter={() => ctx.setActive(src)}
+      onMouseLeave={() => ctx.setActive(null)}
+      onFocus={() => ctx.setActive(src)}
+      onBlur={() => ctx.setActive(null)}
+    >
+      <span className={cx("claim", on && "claim-on", off && "claim-off")}>
         {children}
       </span>
-      <span className={cx("mk", on && "mk-on", off && "mk-off")} {...bind}>
+      <span
+        className={cx("mk", on && "mk-on", off && "mk-off")}
+        aria-hidden="true"
+      >
         [{n}]
       </span>
-    </>
-  );
-}
-
-/** The rail legend on a record's first row. */
-export function RailLegend() {
-  return (
-    <div
-      className="lbl"
-      style={{
-        borderBottom: "1px solid var(--rule)",
-        paddingBottom: "8px",
-        lineHeight: 1.8,
-      }}
-    >
-      <span style={{ color: "var(--amber)" }}>Amber opens.</span>
-      <br />
-      Plain is cited, not linked.
-    </div>
+    </span>
   );
 }
 

@@ -166,3 +166,84 @@ claims are traceable, an arrow that leads nowhere — or 404s in front of a
 hiring manager — costs more than the missing affordance. The URLs are a
 `TODO(ali)` in each content file, and adding one turns the chip into a link
 with no other change.
+
+**#0019 — The homepage is a personnel dossier beside one panel (2026-08-22).
+Supersedes #0001's work-showcase framing.** `/` stops being a scrolling
+portfolio index. It is a single screen: a dossier on the left that is *the
+subject*, and one panel on the right that is *everything you can look up about
+him*. Three different gestures all put something into that same panel — a
+marked claim opens its source, a folder tab renders a section, and the query
+line (#0011) will return an agent answer. #0001's audience call still holds;
+what changes is that the site argues from a person rather than from a list of
+projects, so the work index moves off the page and into the panel. Three
+consequences: `/about` is deleted, because the content it carried is field rows
+in the record now; `/writing` leaves the navigation until it has something in
+it; and the bracket nav is gone, replaced by folder tabs on the top edge of the
+record. Considered keeping the index below the fold (rejected: it reinstates
+the scrolling portfolio the panel exists to replace, and splits the reader's
+attention between two surfaces that say the same thing). Considered opening
+each section as its own route (rejected: a page load per section discards the
+panel's whole premise, which is that one window answers everything).
+
+**#0020 — A cited quote lives in the record it quotes (2026-08-22).** The
+homepage's three sources pull verbatim sentences out of Safiyr's case study and
+the résumé. Those quotes are declared in `metadata.pulls` in
+`content/work/safiyr.mdx` and read out of `src/lib/resume.ts` — never retyped
+into the component that renders them. A quote and the prose it quotes then live
+in one file and move in one diff. The résumé's data moved out of its page into
+`src/lib/resume.ts` for exactly this reason and for no other. A missing pull
+throws at build rather than rendering an empty blockquote, on the same argument
+as #0017: on a site whose entire claim is that the sources are real, a citation
+that has quietly gone hollow is the one failure that costs more than a crash.
+Considered scraping the sentence out of the MDX body at build time (rejected:
+it makes every prose edit a potential silent citation break, and the fragility
+is in the regex rather than in the content).
+
+**#0021 — The query line ships visible, inert, and not green (2026-08-22).**
+The panel foot carries the phase-two agent's input, labelled `NOT BUILT YET`,
+with the field disabled and the suggestion chips inert. On a site whose argument
+is provenance, saying "not built yet" is more on-brand than hiding the thing or
+faking it. The divergence from the artboards is the colour: the prototype draws
+the `>` prompt and `[ SEND ]` in green, and green under #0014 means live or
+verified and nothing else. A disabled control painted in the one colour reserved
+for "this works" is the same lie as an arrow that leads nowhere, so the whole
+foot renders in `--ink-faint` until the agent lands, at which point it is a
+token swap. This is #0018's rule applied to a control instead of a link.
+Considered wiring the input to always return State 5 (rejected: "no source in
+this archive backs an answer to that" is false for questions the archive
+demonstrably answers, and shipping a false statement to demonstrate honesty is
+self-defeating).
+
+**#0022 — The homepage is desktop-only until a mobile artboard exists
+(2026-08-22).** The column is a fixed `1080px` and the grid is `620 / 40 / 420`
+on a definite `608px` row; a narrow screen scrolls it sideways rather than
+reflowing. That row height is load-bearing, not decoration — without a definite
+height the panel's scroll container has nothing to be capped against, the taller
+column defines the row, and long panel content grows the page, which destroys
+the single-screen premise the design exists to deliver. No mobile layout has
+been drawn. The likely shape is the panel becoming a drawer, but that is a
+design decision and improvising it in CSS would quietly make it one nobody took.
+Considered a stacking fallback under ~1100px (rejected: it would be thrown away
+when the real artboard lands, and in the meantime it hides the fact that the
+question is still open).
+
+**#0023 — `NOTHING ON FILE` is a first-class state, not a fallback
+(2026-08-22).** When the agent has no source that backs an answer, the panel
+renders a dedicated state in `--rust`: the question echoed back, then a box
+saying the archive has nothing on file and would rather say so than write one.
+It is built and styled as a peer of the answer state rather than as an error
+branch, because it is #0013's editorial rule executing one level up — the same
+rule that makes an unsourced claim render unmarked. It is also the most
+persuasive screen in the design, and error states do not get designed twice.
+Unreachable until #0021's input is enabled; the markup and tokens ship now so
+phase two adds a branch and no layout work.
+
+**#0024 — The four work records leave draft together (2026-08-22).** Kirikou,
+GENIELearn and Benzina drop `draft: true`, so the panel's Work section shows
+four rows in production instead of the one Safiyr. Their detail pages are still
+write-up-pending stubs, which is the cost: a reader who opens Kirikou gets role,
+period, stack and an honest note rather than a case study. Taken because the
+Work tab is the section a recruiter opens first, and a portfolio for AI
+engineering roles that lists a single project understates the work far more than
+a thin detail page overstates it. #0006 still governs everything else — the
+writing placeholder stays drafted. Revisit per-record once the write-ups land.
