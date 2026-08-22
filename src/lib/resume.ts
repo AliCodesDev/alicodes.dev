@@ -1,17 +1,16 @@
-import type { Metadata } from "next";
-
-export const metadata: Metadata = { title: "Résumé" };
-
 /*
- * Deliberately plain: no chrome, no theme games, prints cleanly. Some readers
- * are non-technical, in a hurry, or forwarding this internally.
+ * The résumé's data, lifted out of the page so it has one home.
+ *
+ * `/resume` renders it plain and unstyled (#0010, #0016). The homepage's
+ * `[3]` source quotes the BEng line from here rather than retyping it — on a
+ * site whose argument is provenance, a quote that can drift from the thing it
+ * quotes is the one bug that matters. #0020.
  *
  * TODO(ali): education dates below are copied from the CV draft, where the MSc
  * (2017–2021) both starts and ends before the BEng (2018–2022). Fix at source.
- * TODO(ali): drop resume.pdf into public/ and the download link goes live.
  */
 
-type Role = {
+export type Role = {
   org: string;
   title: string;
   place: string;
@@ -19,7 +18,15 @@ type Role = {
   points: string[];
 };
 
-const EXPERIENCE: Role[] = [
+export type Study = {
+  org: string;
+  title: string;
+  place: string;
+  dates: string;
+  note: string;
+};
+
+export const EXPERIENCE: Role[] = [
   {
     org: "Safiyr",
     title: "Founding Engineer / Tech Lead",
@@ -64,7 +71,7 @@ const EXPERIENCE: Role[] = [
   },
 ];
 
-const EDUCATION = [
+export const EDUCATION: Study[] = [
   {
     org: "Universitat Pompeu Fabra",
     title: "MSc",
@@ -81,57 +88,7 @@ const EDUCATION = [
   },
 ];
 
-export default function ResumePage() {
-  return (
-    <article className="space-y-10">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight">Ali Ezzeddine</h1>
-        <p className="u-soft">Software / AI Engineer — Beirut, Lebanon</p>
-        <p className="u-mono u-faint text-xs">
-          <a href="mailto:ali@alicodes.dev">ali@alicodes.dev</a> ·{" "}
-          <a href="https://github.com/AliCodesDev">github.com/AliCodesDev</a>
-        </p>
-      </header>
-
-      <section className="space-y-6">
-        <h2 className="u-mono u-faint text-xs tracking-wide uppercase">
-          Experience
-        </h2>
-        {EXPERIENCE.map((role) => (
-          <div key={role.org} className="u-rule space-y-2 border-t pt-4">
-            <div className="flex flex-wrap items-baseline justify-between gap-x-4">
-              <h3 className="font-semibold">
-                {role.org} — {role.title}
-              </h3>
-              <span className="u-mono u-faint text-xs">{role.place}</span>
-            </div>
-            <p className="u-mono u-faint text-xs">{role.dates}</p>
-            <ul className="u-soft list-disc space-y-1 pl-5 text-sm">
-              {role.points.map((point) => (
-                <li key={point}>{point}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </section>
-
-      <section className="space-y-6">
-        <h2 className="u-mono u-faint text-xs tracking-wide uppercase">
-          Education
-        </h2>
-        {EDUCATION.map((item) => (
-          <div key={item.org} className="u-rule space-y-1 border-t pt-4">
-            <div className="flex flex-wrap items-baseline justify-between gap-x-4">
-              <h3 className="font-semibold">
-                {item.org} — {item.title}
-              </h3>
-              <span className="u-mono u-faint text-xs">{item.place}</span>
-            </div>
-            <p className="u-mono u-faint text-xs">{item.dates}</p>
-            <p className="u-soft text-sm">{item.note}</p>
-          </div>
-        ))}
-      </section>
-    </article>
-  );
-}
+/** The degree the homepage's `[3]` cites. Quoted from here, never retyped. */
+export const BENG = EDUCATION.find(
+  (item) => item.org === "American University of Beirut",
+)!;

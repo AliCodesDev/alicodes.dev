@@ -4,6 +4,42 @@ import type { ComponentType } from "react";
 
 export type Collection = "work" | "writing";
 
+/**
+ * An evidence chip: what backs a record, and how strongly. #0013.
+ * `href` is set ONLY when the source is genuinely linkable — the arrow renders
+ * from it, so a chip without a URL never claims to be one.
+ */
+export type Evidence = {
+  label: string;
+  href?: string;
+  /**
+   * "live" = live/verified (green). "none" = context, or not yet gathered.
+   * "link" = linkable grade, URL still pending — amber, but arrow-less until
+   * `href` arrives, which is #0018 doing exactly what it was written for.
+   */
+  tone?: "live" | "none" | "link";
+};
+
+/**
+ * A quote pulled out of a record so a claim elsewhere can cite it. #0020.
+ *
+ * The quote is verbatim from this file's own prose — keeping it in the same
+ * file means quote-and-source drift shows up in a single diff, which is the
+ * whole point of a site that argues from provenance.
+ */
+export type Pull = {
+  /** The claim this backs, in the words the claim uses. */
+  backs: string;
+  /** The sentence itself, verbatim from the record below. */
+  quote: string;
+  /** Exactly where it sits, e.g. `/work/safiyr § "Provenance"`. */
+  locus: string;
+  /** Where the locus points, when it genuinely resolves. #0018. */
+  href?: string;
+  /** How to read this source's grade. */
+  note: string;
+};
+
 export type Meta = {
   title: string;
   summary: string;
@@ -16,6 +52,12 @@ export type Meta = {
   location?: string;
   status?: string;
   stack?: string[];
+  /** What backs this record on the index and work pages. */
+  evidence?: Evidence[];
+  /** Archive ID, e.g. ACD-WRK-SFY-001. Absent means NOT ISSUED. */
+  archiveId?: string;
+  /** Quotes this record lends to claims elsewhere, keyed by source id. */
+  pulls?: Record<string, Pull>;
   /** writing */
   date?: string;
 };

@@ -52,10 +52,10 @@ Safiyr, Kirikou, GENIELearn, Benzina: AI-first, with the shipped-product proof
 anchoring the end.
 
 **#0008 — Styling is provisional until the visual direction is chosen
-(2026-08-19).** `globals.css` holds neutral, readable defaults behind a small
-token layer. The intent was to make structure reviewable without quietly
-deciding the visual identity. Design direction remains an open conversation;
-treat everything visual as placeholder.
+(2026-08-19). Superseded by #0014.** `globals.css` holds neutral, readable
+defaults behind a small token layer. The intent was to make structure reviewable
+without quietly deciding the visual identity. Design direction remains an open
+conversation; treat everything visual as placeholder.
 
 **#0009 — The Safiyr case study describes architecture and reasoning only
 (2026-08-19).** No code, no product strategy, no customers. Ali owns the IP
@@ -79,3 +79,171 @@ built so far.
 **#0012 — DNS stays unpointed until there is a deploy worth pointing at
 (2026-08-19).** The domain is registered at Namecheap and untouched. Pointing it
 early means a live URL showing a scaffold.
+
+**#0013 — The site sources its claims (2026-08-20).** Prose claims carry a
+typed, addressable source, shown in a rail beside the text and collapsing to an
+inline disclosure on narrow screens. Sources are graded, because the grades are
+not equivalent: *linkable* (repo, live site, thesis, degree), *citable but not
+linkable* (decision record, private source), and *context* — a link that proves
+the thing exists but says nothing about Ali's role in it. The audience is doing
+claim-verification when they read this, and the site is about provenance work
+anyway: Safiyr's whole argument is that every clinical fact is traceable to the
+sentence it came from, and this is the same idea one level up. The load-bearing
+consequence is that a claim with no source cannot be marked, so an unbacked page
+visibly looks unbacked — the editorial rule enforces itself instead of living in
+a note in `PROGRESS.md`. It also gives the phase-two agent (#0011) a citation
+surface that already exists, rather than one bolted on beside it. Considered
+prose with ordinary inline links (rejected: a link to a repo and a line on a
+résumé render identically, which is precisely the distinction worth making).
+
+**#0014 — The visual direction is an archive record, not a terminal
+(2026-08-20). Supersedes #0008.** Amber `#E3A63F` on near-black `#0A0B09`, with
+green `#43D98A` reserved to mean live/verified and nothing else. Two families:
+Space Mono for system voice — field labels, IDs, chips, nav, footers — and
+Archivo for display *and* long-form body. Numbered field rows, an archive ID as
+anchor, bracket nav, notched panels, corner status meta, registry footer.
+The reference set Ali collected split into two groups, and the split decided
+this: *records* (a colony personnel database, a character dossier) have an
+information architecture — typed fields, an addressable ID, a subject whose
+attributes can be looked up, which is structurally the same object as #0013's
+rail. *Costume* (fake shell prompts, ASCII art, phosphor-green CRT) dresses an
+ordinary page in terminal clothes. Taking the record and leaving the costume is
+what keeps this clear of #0001's worry that retro reads "frontend hobbyist" — a
+dossier is a claim about rigour, a terminal skin is a claim about nostalgia.
+Rejected green-led (the most-produced look in the genre, and near-black plus one
+acid accent is a stock default — hardest to make read as a decision) and
+all-mono including body copy (Safiyr is ~2,500 words of argument; mono at that
+length is a readability tax on exactly the reader we are trying to convince,
+and the dossier references get away with it only because their bio panels are
+eighty words).
+
+**#0015 — The portrait is a deterministic dither, not a generated image
+(2026-08-20).** `scripts/dither-portrait.py` takes the raw passport photo and
+produces a 1-bit Floyd–Steinberg dither, white-on-transparent, tinted at render
+time through a CSS mask. No image model touches it. The decisive reason is
+fidelity: a generative pass subtly redraws a face — jaw, eye spacing, hairline —
+and the person reading this site may later be sitting across from him. Three
+lesser reasons: tinting in CSS keeps the portrait coupled to the palette token
+instead of freezing it, a dither computed against the real pixel grid stays
+sharp where a baked halftone gets resampled to mush at 2x, and the whole thing
+is rerunnable. The raw photo stays gitignored under `assets/`; only the
+processed output ships. Considered an image-to-image restyle at low strength
+(rejected: still redraws the face, and it would have to be regenerated on every
+palette change).
+
+**#0016 — `/resume` is isolated by its own root layout (2026-08-20).** #0010
+kept the résumé plain by convention; this makes it structural. The themed site
+and `/resume` are separate route groups with separate root layouts, so
+`/resume` has its own `<html>`, its own stylesheet, and no path by which the
+archive theme can reach it. Considered scoping the dark theme to a wrapper
+class inside one shared layout (rejected: the theme needs `body` to carry the
+background and the scanline overlay, so "don't theme the résumé" would have
+stayed a rule someone has to remember rather than something the tree enforces —
+and the first person to add a global rule would have broken it silently). Cost
+is a full page load when navigating between `/resume` and the rest of the site,
+which is unobjectionable for a page people arrive at, read, and forward.
+
+**#0017 — Claims reference declared sources by id; numbering is positional
+(2026-08-20).** A `Sourced` group declares its sources in order; a `Claim`
+names one by id and renders the marker for that source's position. Numbering
+comes from the declaration, not from where the claim sits in the prose, so
+moving a sentence does not renumber the rail. The load-bearing part is the
+failure mode: a claim whose id matches no citable source renders as plain prose
+with no mark, and a *context* source can never back a claim at all. That is
+#0013's editorial rule executing rather than being remembered. Considered
+explicit numbers in the markup (rejected: they go stale the moment a source is
+inserted) and auto-registration in document order (rejected: it makes rail
+order depend on render order, and leaves no way to declare a source that no
+claim happens to cite yet).
+
+**#0018 — A link's arrow renders from its URL, never from its grade
+(2026-08-20).** Evidence chips and rail entries show the `→` only when an
+`href` is actually present. The artboards draw `AliCodesDev/kirikou →` and
+Benzina's `live →`, but no repo or deployment URL exists anywhere in this repo,
+so those render as plain chips that still carry their grade and colour. This
+diverges from the mockups deliberately: on a site whose whole argument is that
+claims are traceable, an arrow that leads nowhere — or 404s in front of a
+hiring manager — costs more than the missing affordance. The URLs are a
+`TODO(ali)` in each content file, and adding one turns the chip into a link
+with no other change.
+
+**#0019 — The homepage is a personnel dossier beside one panel (2026-08-22).
+Supersedes #0001's work-showcase framing.** `/` stops being a scrolling
+portfolio index. It is a single screen: a dossier on the left that is *the
+subject*, and one panel on the right that is *everything you can look up about
+him*. Three different gestures all put something into that same panel — a
+marked claim opens its source, a folder tab renders a section, and the query
+line (#0011) will return an agent answer. #0001's audience call still holds;
+what changes is that the site argues from a person rather than from a list of
+projects, so the work index moves off the page and into the panel. Three
+consequences: `/about` is deleted, because the content it carried is field rows
+in the record now; `/writing` leaves the navigation until it has something in
+it; and the bracket nav is gone, replaced by folder tabs on the top edge of the
+record. Considered keeping the index below the fold (rejected: it reinstates
+the scrolling portfolio the panel exists to replace, and splits the reader's
+attention between two surfaces that say the same thing). Considered opening
+each section as its own route (rejected: a page load per section discards the
+panel's whole premise, which is that one window answers everything).
+
+**#0020 — A cited quote lives in the record it quotes (2026-08-22).** The
+homepage's three sources pull verbatim sentences out of Safiyr's case study and
+the résumé. Those quotes are declared in `metadata.pulls` in
+`content/work/safiyr.mdx` and read out of `src/lib/resume.ts` — never retyped
+into the component that renders them. A quote and the prose it quotes then live
+in one file and move in one diff. The résumé's data moved out of its page into
+`src/lib/resume.ts` for exactly this reason and for no other. A missing pull
+throws at build rather than rendering an empty blockquote, on the same argument
+as #0017: on a site whose entire claim is that the sources are real, a citation
+that has quietly gone hollow is the one failure that costs more than a crash.
+Considered scraping the sentence out of the MDX body at build time (rejected:
+it makes every prose edit a potential silent citation break, and the fragility
+is in the regex rather than in the content).
+
+**#0021 — The query line ships visible, inert, and not green (2026-08-22).**
+The panel foot carries the phase-two agent's input, labelled `NOT BUILT YET`,
+with the field disabled and the suggestion chips inert. On a site whose argument
+is provenance, saying "not built yet" is more on-brand than hiding the thing or
+faking it. The divergence from the artboards is the colour: the prototype draws
+the `>` prompt and `[ SEND ]` in green, and green under #0014 means live or
+verified and nothing else. A disabled control painted in the one colour reserved
+for "this works" is the same lie as an arrow that leads nowhere, so the whole
+foot renders in `--ink-faint` until the agent lands, at which point it is a
+token swap. This is #0018's rule applied to a control instead of a link.
+Considered wiring the input to always return State 5 (rejected: "no source in
+this archive backs an answer to that" is false for questions the archive
+demonstrably answers, and shipping a false statement to demonstrate honesty is
+self-defeating).
+
+**#0022 — The homepage is desktop-only until a mobile artboard exists
+(2026-08-22).** The column is a fixed `1080px` and the grid is `620 / 40 / 420`
+on a definite `608px` row; a narrow screen scrolls it sideways rather than
+reflowing. That row height is load-bearing, not decoration — without a definite
+height the panel's scroll container has nothing to be capped against, the taller
+column defines the row, and long panel content grows the page, which destroys
+the single-screen premise the design exists to deliver. No mobile layout has
+been drawn. The likely shape is the panel becoming a drawer, but that is a
+design decision and improvising it in CSS would quietly make it one nobody took.
+Considered a stacking fallback under ~1100px (rejected: it would be thrown away
+when the real artboard lands, and in the meantime it hides the fact that the
+question is still open).
+
+**#0023 — `NOTHING ON FILE` is a first-class state, not a fallback
+(2026-08-22).** When the agent has no source that backs an answer, the panel
+renders a dedicated state in `--rust`: the question echoed back, then a box
+saying the archive has nothing on file and would rather say so than write one.
+It is built and styled as a peer of the answer state rather than as an error
+branch, because it is #0013's editorial rule executing one level up — the same
+rule that makes an unsourced claim render unmarked. It is also the most
+persuasive screen in the design, and error states do not get designed twice.
+Unreachable until #0021's input is enabled; the markup and tokens ship now so
+phase two adds a branch and no layout work.
+
+**#0024 — The four work records leave draft together (2026-08-22).** Kirikou,
+GENIELearn and Benzina drop `draft: true`, so the panel's Work section shows
+four rows in production instead of the one Safiyr. Their detail pages are still
+write-up-pending stubs, which is the cost: a reader who opens Kirikou gets role,
+period, stack and an honest note rather than a case study. Taken because the
+Work tab is the section a recruiter opens first, and a portfolio for AI
+engineering roles that lists a single project understates the work far more than
+a thin detail page overstates it. #0006 still governs everything else — the
+writing placeholder stays drafted. Revisit per-record once the write-ups land.

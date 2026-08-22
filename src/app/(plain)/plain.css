@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+/*
+ * /resume only. DECISIONS.md #0010: plain, print-friendly, no chrome, no
+ * theme, no interaction. Some readers are non-technical, in a hurry, or
+ * forwarding this internally, and novelty is a liability in that moment.
+ *
+ * This is deliberately OUTSIDE the archive-record design in globals.css. It is
+ * the neutral styling the page has always had, kept intact and given its own
+ * root layout so the theme cannot reach it. Do not make this file match the
+ * rest of the site.
+ */
+:root {
+  --ground: #fcfcfb;
+  --ink: #1a1a19;
+  --ink-soft: #55554f;
+  --ink-faint: #8a8a82;
+  --rule: #e3e3de;
+  --accent: #33443f;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: #121312;
+    --ink: #e8e8e3;
+    --ink-soft: #a3a39b;
+    --ink-faint: #74746c;
+    --rule: #2a2b29;
+    --accent: #9ab5aa;
+  }
+}
+
+html { color-scheme: light dark; }
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: ui-serif, "Iowan Old Style", Charter, Georgia, serif;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-underline-offset: 3px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+.u-mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+.u-faint { color: var(--ink-faint); }
+.u-soft { color: var(--ink-soft); }
+.u-rule { border-color: var(--rule); }
+
+@media print {
+  body { background: #fff; color: #000; }
+}

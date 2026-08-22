@@ -1,71 +1,981 @@
 @import "tailwindcss";
 
 /*
- * PROVISIONAL. Neutral, readable defaults so structure is reviewable before the
- * visual direction is decided. Everything here is meant to be replaced.
+ * The archive record. DECISIONS.md #0013 (sourced claims) and #0014 (visual
+ * direction). Values are lifted from the design canvas artboards, not eyeballed.
+ *
+ * Amber carries the interface. Green is spent on one thing only — live,
+ * verified, backed — so it stays worth noticing. Nothing else is coloured.
  */
 :root {
-  --ground: #fcfcfb;
-  --ink: #1a1a19;
-  --ink-soft: #55554f;
-  --ink-faint: #8a8a82;
-  --rule: #e3e3de;
-  --accent: #33443f;
+  --void: #0a0b09;
+  --panel: #101210;
+  --rule: #2a2e29;
+  --grid-dot: #191d19;
+
+  --amber: #e3a63f;
+  --amber-dim: #8a6b2c;
+  --amber-wash: rgba(227, 166, 63, 0.1);
+  --amber-live: rgba(227, 166, 63, 0.2);
+  --amber-edge: rgba(227, 166, 63, 0.45);
+
+  /* Reserved. Live / verified / backed, and nothing else. */
+  --green: #43d98a;
+  --green-edge: rgba(67, 217, 138, 0.35);
+
+  /* Decommissioned — the one status that is neither live nor neutral. */
+  --rust: #b4553f;
+
+  --ink: #d8d6ce;
+  --ink-bright: #f0eae0;
+  --ink-lit: #f5efe2;
+  --ink-soft: #9a9f96;
+  --ink-dim: #7e837a;
+  --ink-faint: #5f645c;
+
+  --measure: 620px;
+  --rail: 212px;
+  --gutter: 48px;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ground: #121312;
-    --ink: #e8e8e3;
-    --ink-soft: #a3a39b;
-    --ink-faint: #74746c;
-    --rule: #2a2b29;
-    --accent: #9ab5aa;
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--void);
+  background-image: radial-gradient(circle, var(--grid-dot) 1px, transparent 1px);
+  background-size: 30px 30px;
+  color: var(--ink);
+  font-family: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * CRT texture. Static, not animated — it is a surface, not an effect. Fixed so
+ * it does not scroll with the content, and inert to the pointer.
+ */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.5;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.28) 0px,
+    rgba(0, 0, 0, 0.28) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+a {
+  color: var(--amber);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--green);
+}
+:focus-visible {
+  outline: 1px solid var(--amber);
+  outline-offset: 2px;
+}
+
+/* ---- System voice. If it is set in mono, the archive is talking. ---- */
+
+.mono {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+}
+
+.lbl {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber-dim);
+}
+
+.val {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-top: 4px;
+}
+.val-a { color: var(--amber); }
+.val-g { color: var(--green); }
+.val-r { color: var(--rust); }
+.val-dim { color: var(--ink-dim); }
+
+.archive-id {
+  border-bottom: 1px solid var(--amber);
+  padding-bottom: 2px;
+}
+
+/* ---- Notched panels ---- */
+
+.notch {
+  clip-path: polygon(
+    0 10px, 10px 0,
+    calc(100% - 10px) 0, 100% 10px,
+    100% calc(100% - 10px), calc(100% - 10px) 100%,
+    10px 100%, 0 calc(100% - 10px)
+  );
+}
+
+/* One-pixel rule drawn as a padded parent, so the notch keeps its edge. */
+.panel {
+  background: var(--rule);
+  padding: 1px;
+}
+.panel-in {
+  background: var(--panel);
+}
+
+/* ---- Bracket nav ---- */
+
+.navb {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.navb:hover { color: var(--amber); }
+.navb-on {
+  color: var(--void);
+  background: var(--amber);
+  padding: 2px 5px;
+}
+.navb-on:hover { color: var(--void); }
+
+/* ---- Claims and their markers ---- */
+
+.claim {
+  background: var(--amber-wash);
+  border-bottom: 1px solid var(--amber-edge);
+  padding: 1px 2px;
+  color: var(--ink-bright);
+  transition: background-color 90ms linear, color 90ms linear,
+    border-color 90ms linear;
+}
+.mk {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  color: var(--amber);
+  letter-spacing: 0.06em;
+  margin-left: 4px;
+  white-space: nowrap;
+  transition: background-color 90ms linear, color 90ms linear;
+}
+
+/* Active: the claim under pointer or keyboard focus. */
+.claim-on {
+  background: var(--amber-live);
+  border-bottom-color: var(--amber);
+  color: var(--ink-lit);
+}
+.mk-on {
+  background: var(--amber);
+  color: var(--void);
+  padding: 1px 4px;
+}
+
+/* Stepped back: a sibling claim, while another one is active. */
+.claim-off {
+  background: transparent;
+  border-bottom-color: var(--rule);
+  color: var(--ink-faint);
+}
+.mk-off { color: var(--ink-faint); }
+
+/* ---- The source rail ---- */
+
+.ref {
+  display: flex;
+  gap: 9px;
+  position: relative;
+  transition: opacity 90ms linear;
+}
+.ref-n {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  color: var(--amber);
+  flex: none;
+  letter-spacing: 0.04em;
+}
+.ref-n-on {
+  background: var(--amber);
+  color: var(--void);
+  padding: 0 3px;
+  height: 14px;
+  line-height: 14px;
+}
+.ref-t {
+  display: block;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 10.5px;
+  line-height: 1.5;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.ref-k {
+  display: block;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber-dim);
+  margin-top: 4px;
+}
+/* Linkable sources are amber and carry an arrow. Cited-not-linkable stay plain. */
+.ref-link .ref-t,
+.ref-link .ref-k {
+  color: var(--amber);
+}
+.ref-off { opacity: 0.32; }
+.ref-body {
+  border-left: 2px solid var(--amber);
+  padding-left: 10px;
+  margin-top: -1px;
+}
+.ref-quote {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin-top: 8px;
+  font-style: italic;
+}
+
+/* ---- Evidence chips ---- */
+
+.chip {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  padding: 3px 6px;
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+/* Green means live or verified. It is never decoration. */
+.chip-g {
+  color: var(--green);
+  border-color: var(--green-edge);
+}
+/* Dashed and grey: context, or evidence not yet gathered. */
+.chip-n {
+  color: var(--ink-faint);
+  border-style: dashed;
+}
+
+/* ---- Portrait ---- */
+
+.portrait-frame {
+  border: 1px solid var(--amber-dim);
+  position: relative;
+  overflow: hidden;
+  background: var(--void);
+}
+/*
+ * portrait.png is white-on-transparent (scripts/dither-portrait.py). It is
+ * tinted here through a mask so it follows the amber token — never recoloured
+ * by hand, never baked in. #0015.
+ */
+.portrait-mask {
+  width: 100%;
+  height: 100%;
+  background-color: var(--amber);
+  -webkit-mask-image: url("/portrait.png");
+  mask-image: url("/portrait.png");
+  -webkit-mask-size: cover;
+  mask-size: cover;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+.portrait-scan {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.28) 0px,
+    rgba(0, 0, 0, 0.28) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* ---- Long-form prose. Archivo — this is Ali talking, not the archive. ---- */
+
+.prose {
+  font-size: 16.5px;
+  line-height: 1.72;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.prose > * + * { margin-top: 15px; }
+.prose h2 {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 9px;
+  margin-top: 34px;
+  text-wrap: balance;
+}
+.prose h2 + * { margin-top: 18px; }
+.prose h3 {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-top: 26px;
+}
+.prose strong {
+  font-weight: 700;
+  color: var(--ink-bright);
+}
+.prose code {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 14.5px;
+}
+.prose a {
+  color: var(--amber);
+  border-bottom: 1px solid var(--amber-edge);
+}
+.prose a:hover {
+  color: var(--green);
+  border-bottom-color: var(--green-edge);
+}
+.prose ul { list-style: none; padding-left: 0; }
+.prose ul > li {
+  position: relative;
+  padding-left: 20px;
+}
+.prose ul > li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.72em;
+  width: 5px;
+  height: 1px;
+  background: var(--amber-dim);
+}
+.prose ol { list-style: decimal; padding-left: 1.2rem; }
+.prose li + li { margin-top: 6px; }
+.prose blockquote {
+  border-left: 2px solid var(--amber);
+  padding-left: 14px;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 30px 0;
+}
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.prose th,
+.prose td {
+  text-align: left;
+  padding: 0.55rem 0.8rem;
+  border-bottom: 1px solid var(--rule);
+}
+.prose th {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--amber-dim);
+  font-weight: 400;
+}
+.prose :is(h2, h3) { scroll-margin-top: 5rem; }
+.prose .table-scroll { overflow-x: auto; }
+
+/* ---- The record grid: measure + rail ---- */
+
+/*
+ * 620 measure + 48 gutter + 212 rail = the 880 column the artboards use.
+ * Below the breakpoint the rail stops being a column and becomes an inline
+ * disclosure under the prose — #0013.
+ */
+.record-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .record-grid {
+    grid-template-columns: minmax(0, 1fr) var(--rail);
+    gap: var(--gutter);
   }
 }
 
-html { color-scheme: light dark; }
-body {
-  background: var(--ground);
+.rail > summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 46px;
+  border-top: 1px solid var(--rule);
+  cursor: pointer;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.rail > summary::-webkit-details-marker { display: none; }
+.rail-chev { transition: transform 120ms ease; }
+.rail[open] .rail-chev { transform: rotate(180deg); }
+
+.rail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-left: 2px solid rgba(227, 166, 63, 0.3);
+  padding-left: 11px;
+  padding-bottom: 6px;
+}
+
+/* Desktop: the rail is a static column, always open, with a ruled header. */
+@media (min-width: 900px) {
+  .rail > summary {
+    height: auto;
+    border-top: 0;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+    cursor: default;
+    pointer-events: none;
+    color: var(--amber-dim);
+  }
+  .rail-count,
+  .rail-chev { display: none; }
+  .rail-body {
+    border-left: 0;
+    padding-left: 0;
+    gap: 20px;
+  }
+}
+
+/* Context sources sit below a dashed rule, outside the citation sequence. */
+.ref-context {
+  margin-top: 22px;
+  border-top: 1px dashed #3a3f38;
+  padding-top: 14px;
+}
+.ref-context .ref-n { color: var(--ink-dim); }
+.ref-context .ref-t { color: #8a8f86; }
+
+/* Evidence identified but not yet gathered. Dashed, and it says so. */
+.pending {
+  margin-top: 22px;
+  border: 1px dashed #3a3f38;
+  padding: 13px;
+}
+.ref-body .ref-t { color: var(--ink-lit); }
+.ref-body .ref-k { color: var(--amber); }
+.ref-off .ref-n { color: var(--ink-dim); }
+
+/* ============================================================================
+ * The dossier homepage. DECISIONS.md #0019–#0022.
+ *
+ * The record is the subject; the panel beside it is everything you can look up
+ * about him. Three gestures feed that one panel — a marked claim, a folder tab,
+ * and (phase two) the query line.
+ *
+ * Desktop-only by decision, not by omission: the column is a fixed 1080px and a
+ * narrow screen scrolls it sideways. Improvising a phone layout here would be
+ * inventing a design that has not been drawn. #0022.
+ * ==========================================================================*/
+
+.dossier-col {
+  width: 1080px;
+  margin: 0 auto;
+  padding-top: 30px;
+  padding-bottom: 44px;
+}
+
+/*
+ * The row height is load-bearing. Without a definite height the panel's scroll
+ * container has nothing to be capped against, the taller column defines the
+ * row, and long panel content grows the page — which destroys the single-screen
+ * premise. Do not replace it with auto, min-height or fit-content.
+ */
+.dossier-grid {
+  display: grid;
+  grid-template-columns: 620px 40px 420px;
+  grid-template-rows: 608px;
+  align-items: stretch;
+}
+
+/* ---- Folder tabs. The manila cut tab: flat top, slanted sides. ---- */
+
+/*
+ * The trapezoid is clip-path, never a border — clip-path shears a border away
+ * along the angled edges. Outlines are the padded-parent fill used throughout
+ * this design: an outer div in --rule with 1px padding over an inner fill,
+ * both clipped, the inner one pixel shallower at the slant.
+ */
+.tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  padding-left: 20px;
+}
+
+.tab-label {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 20px;
+}
+
+/* Active: taller than its siblings, and no bottom rule — it reads as
+ * continuous with the open folder beneath. Both details carry the metaphor. */
+.tab-on {
+  background: var(--amber);
+  color: var(--void);
+  height: 32px;
+  clip-path: polygon(11px 0, calc(100% - 11px) 0, 100% 100%, 0 100%);
+}
+
+.tab-off {
+  background: var(--rule);
+  padding: 1px 1px 0;
+  height: 28px;
+  clip-path: polygon(11px 0, calc(100% - 11px) 0, 100% 100%, 0 100%);
+}
+.tab-off-in {
+  background: var(--panel);
+  height: 100%;
+  color: var(--amber-dim);
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 100%, 0 100%);
+}
+.tab-off:hover .tab-off-in {
+  color: var(--amber);
+}
+
+/* The `+` stub is a non-interactive affordance: more tabs are coming. */
+.tab-stub {
+  background: var(--rule);
+  padding: 1px 1px 0;
+  height: 23px;
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 100%, 0 100%);
+}
+.tab-stub-in {
+  background: var(--void);
+  height: 100%;
+  clip-path: polygon(9px 0, calc(100% - 9px) 0, 100% 100%, 0 100%);
+  font-size: 9.5px;
+  color: var(--ink-faint);
+  padding: 0 15px;
+  letter-spacing: 0;
+}
+
+/* ---- The panel: one window, five states ---- */
+
+.pnl-in {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pnl-head {
+  flex: none;
+  padding: 16px 18px 11px;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.pnl-head-l {
+  min-width: 0;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pnl-back {
+  flex: none;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber-dim);
+}
+.pnl-back:hover {
+  color: var(--amber);
+}
+
+.pnl-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px;
+}
+.pnl-body::-webkit-scrollbar {
+  width: 6px;
+}
+.pnl-body::-webkit-scrollbar-track {
+  background: var(--void);
+}
+.pnl-body::-webkit-scrollbar-thumb {
+  background: var(--rule);
+}
+
+.pnl-foot {
+  flex: none;
+  border-top: 1px solid var(--rule);
+  padding: 13px 18px 15px;
+}
+
+/* A closing line under a dashed rule. Shared by REST and RESPONSE. */
+.pnl-note {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  line-height: 1.8;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.pnl-note-rule {
+  margin-top: 8px;
+  border-top: 1px dashed var(--rule);
+  padding-top: 13px;
+}
+
+/* ---- State 1: REST — every source backing the record ---- */
+
+.pnl-refs {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+/* A ref entry in the panel is a button; strip the agent styling, keep .ref. */
+.ref-btn {
+  display: flex;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* ---- State 2: SOURCE — a claim was clicked ---- */
+
+.src-n {
+  flex: none;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  background: var(--amber);
+  color: var(--void);
+  padding: 0 3px;
+  height: 14px;
+  line-height: 14px;
+  letter-spacing: 0.04em;
+}
+.src-id {
+  border-left: 2px solid var(--amber);
+  padding-left: 11px;
+  margin-top: -1px;
+}
+.src-t {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 11.5px;
+  line-height: 1.45;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink-lit);
+}
+.src-k {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-top: 5px;
+}
+.src-sec {
+  margin-top: 16px;
+  border-top: 1px solid var(--rule);
+  padding-top: 14px;
+}
+.src-sec-first {
+  margin-top: 18px;
+}
+/* The claim this source backs, quoted back at the reader. */
+.src-backs {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  margin-top: 7px;
+  text-wrap: pretty;
+}
+/* The sentence actually pulled from the record. */
+.src-quote {
+  font-size: 14.5px;
+  line-height: 1.6;
   color: var(--ink);
-  font-family: ui-serif, "Iowan Old Style", Charter, Georgia, serif;
+  margin-top: 8px;
+  font-style: italic;
+  border-left: 2px solid var(--rule);
+  padding-left: 12px;
+  text-wrap: pretty;
+}
+.src-loc {
+  margin-top: 8px;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 10.5px;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+}
+/* Amber only when the locus is genuinely reachable. #0018. */
+.src-loc-link {
+  color: var(--amber);
+}
+.src-note {
+  margin-top: 9px;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  line-height: 1.7;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ---- State 3: SECTION — a folder tab was clicked ---- */
+
+.sec-row {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+}
+.sec-n {
+  flex: none;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--amber-dim);
+}
+.sec-t {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 12.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--amber);
+  line-height: 1.4;
+}
+.sec-s {
+  font-size: 13.5px;
+  line-height: 1.58;
+  color: var(--ink-dim);
+  margin-top: 5px;
+  text-wrap: pretty;
+}
+
+/* ---- State 4: RESPONSE (phase two) ---- */
+
+/* The question, echoed back before anything is claimed in reply. */
+.ans-asked {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  border-bottom: 1px dashed var(--rule);
+  padding-bottom: 11px;
+}
+.ans-p {
+  font-size: 15px;
+  line-height: 1.68;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.ans-p + .ans-p {
+  margin-top: 13px;
+}
+.ans-fig {
+  margin-top: 16px;
+  border: 1px solid var(--rule);
+  background: var(--void);
+  padding: 12px;
+}
+.ans-fig-cap {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-top: 9px;
+}
+
+/* ---- State 5: NOTHING ON FILE (phase two) ----
+ *
+ * Not an error state. This is #0013's editorial rule executing at the agent
+ * layer: the archive would rather say it has nothing than write an answer no
+ * source backs. Built first-class, never as a fallback — #0023. --rust is
+ * #0014's one status that is neither live nor neutral.
+ */
+.nof {
+  margin-top: 20px;
+  border: 1px dashed var(--rust);
+  padding: 16px;
+}
+.nof-h {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--rust);
+}
+.nof-p {
+  font-size: 14.5px;
   line-height: 1.65;
-  -webkit-font-smoothing: antialiased;
+  color: var(--ink-soft);
+  margin-top: 11px;
+  text-wrap: pretty;
 }
-a { color: inherit; text-underline-offset: 3px; }
-a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
 
-.u-mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
-.u-faint { color: var(--ink-faint); }
-.u-soft { color: var(--ink-soft); }
-.u-rule { border-color: var(--rule); }
+/* ---- The query line. Visible, honestly labelled, and inert. #0021. ---- */
 
-/* MDX output */
-.prose { max-width: 40rem; }
-.prose > * + * { margin-top: 1.1rem; }
-.prose h2 {
-  font-size: 1.5rem; line-height: 1.25; font-weight: 600; letter-spacing: -0.012em;
-  margin-top: 2.8rem; padding-top: 1.4rem; border-top: 1px solid var(--rule);
-  text-wrap: balance;
+.q-row {
+  margin-top: 10px;
+  border: 1px solid var(--rule);
+  background: var(--void);
+  padding: 10px 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.prose h3 { font-size: 1.05rem; font-weight: 600; margin-top: 1.8rem; }
-.prose strong { font-weight: 600; }
-.prose code {
-  font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.85em;
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  padding: 0.1em 0.36em; border-radius: 3px;
+.q-prompt,
+.q-send {
+  flex: none;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  color: var(--ink-faint);
 }
-.prose a { color: var(--accent); text-decoration: underline; }
-.prose ul { list-style: disc; padding-left: 1.2rem; }
-.prose ol { list-style: decimal; padding-left: 1.2rem; }
-.prose li + li { margin-top: 0.3rem; }
-.prose blockquote {
-  border-left: 2px solid var(--accent); padding-left: 1rem; color: var(--ink-soft);
+.q-prompt {
+  font-size: 12px;
 }
-.prose hr { border: 0; border-top: 1px solid var(--rule); margin: 2.4rem 0; }
-.prose table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
-.prose th, .prose td { text-align: left; padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--rule); }
-.prose th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); font-weight: 500; }
-.prose :is(h2, h3) { scroll-margin-top: 5rem; }
+.q-send {
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.q-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  color: var(--ink);
+  padding: 0;
+}
+.q-input::placeholder {
+  color: var(--ink-faint);
+  opacity: 1;
+}
+.q-input:disabled {
+  cursor: not-allowed;
+}
+.q-chip {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  color: var(--amber-dim);
+  border: 1px dashed var(--rule);
+  padding: 4px 7px;
+}
 
-/* Tables can be wider than the measure; let them scroll rather than the page. */
-.prose .table-scroll { overflow-x: auto; }
+/* ---- Dossier odds and ends ---- */
+
+/* A field value that is genuinely a link. */
+.val-link {
+  color: var(--amber);
+  border-bottom: 1px solid var(--amber-edge);
+  padding-bottom: 1px;
+}
+
+/* Presence chips run one step larger than the section-row chips. */
+.presence-row .chip {
+  padding: 4px 7px;
+}
+/* Linkable: amber, and the arrow comes from the href. #0018. */
+.chip-a {
+  color: var(--amber);
+  border-color: var(--amber-edge);
+}
+
+/* The hint that makes the claim affordance discoverable at all. */
+.hint {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/*
+ * A claim is now a click target as well as a hover one. The hit area wraps
+ * both the text and its marker as a single tab stop; it stays a span because a
+ * claim runs mid-sentence and has to fragment across lines, which a button box
+ * will not do.
+ */
+.claim-hit {
+  cursor: pointer;
+}
+
+/* Two smaller steps of the label voice, for the panel's interior. */
+.lbl-s {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber-dim);
+}
+.lbl-xs {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}

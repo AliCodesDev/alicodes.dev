@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# alicodes.dev
 
-## Getting Started
+Personal site for Ali Ezzeddine — software / AI engineer, Beirut.
 
-First, run the development server:
+The homepage is a personnel record: a dossier beside a single panel that answers
+everything you can look up about him. Claims in the prose carry numbered,
+addressable sources, and clicking one opens the source in the panel — the quote,
+where it came from, and whether it is genuinely linkable or merely cited. A claim
+with nothing behind it gets no mark, which is the point rather than an oversight.
+
+## Running it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm build   # type-checks and prerenders every route
+pnpm lint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Run `pnpm build` before committing. It catches broken content imports that
+`pnpm dev` will happily tolerate.
 
-## Learn More
+## Stack
 
-To learn more about Next.js, take a look at the following resources:
+Next.js 16 (App Router, Turbopack), TypeScript, Tailwind v4, MDX. Every route
+prerenders static. Archivo and Space Mono, self-hosted through `next/font`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Layout
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+content/work/*.mdx        case studies — the source of truth for the site
+content/writing/*.mdx
+src/app/(archive)/        the themed site
+src/app/(plain)/resume/   the résumé, deliberately outside the theme
+src/components/           record, dossier, claims, chrome
+src/lib/content.ts        the only thing that reads content/
+```
 
-## Deploy on Vercel
+Content is MDX reached through the `@content/*` alias, and each file exports a
+`metadata` object rather than carrying YAML frontmatter. `draft: true` renders in
+dev and is hidden in production. Work ordering is curated via `metadata.order`,
+never alphabetical.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Docs
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [`PROGRESS.md`](PROGRESS.md) — where the build stands, what is next, what is
+  still open
+- [`DECISIONS.md`](DECISIONS.md) — every non-trivial decision, with the reasoning
+  and the alternatives that lost
+- [`CLAUDE.md`](CLAUDE.md) — conventions and the gotchas worth knowing first
