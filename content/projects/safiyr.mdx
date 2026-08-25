@@ -6,6 +6,8 @@ export const metadata = {
   period: "March \u2013 August 2026",
   location: "Paris, France",
   status: "Shut down. Architecture and reasoning preserved.",
+  state: { label: "Decommissioned", tone: "r" },
+  source: { label: "Private", tone: "dim" },
   stack: [
     "Python 3.12", "FastAPI", "PostgreSQL", "Redis", "SQLAlchemy", "Alembic",
     "Next.js 15", "TypeScript", "AWS KMS", "Claude Sonnet 5",
@@ -18,18 +20,18 @@ export const metadata = {
       backs: "Five months as sole engineer on Safiyr",
       quote:
         "I was the sole engineer. I designed and built it over five months: the event-sourced backend, the encryption layer, the extraction and reconciliation pipeline, and both frontends.",
-      locus: "/work/safiyr \u00b7 ACD-WRK-SFY-001",
-      href: "/work/safiyr",
+      locus: "/projects/safiyr \u00b7 ACD-WRK-SFY-001",
+      href: "/projects/safiyr",
       note: "Cited into the archive. Source code private.",
     },
     provenance: {
       backs: "every extracted fact is traceable to the sentence it came from",
       quote:
         "Facts marked as direct quotes are enforced verbatim against the source text, not merely requested to be.",
-      locus: "/work/safiyr \u00a7 \u201cProvenance: verbatim or nothing\u201d",
+      locus: "/projects/safiyr \u00a7 \u201cProvenance: verbatim or nothing\u201d",
       // rehype-slug derives this id from the heading below. Rename the heading
       // and this link goes stale — check both, or the citation lies.
-      href: "/work/safiyr#provenance-verbatim-or-nothing",
+      href: "/projects/safiyr#provenance-verbatim-or-nothing",
       note: "Section anchor inside the record above.",
     },
   },

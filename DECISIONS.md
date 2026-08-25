@@ -256,3 +256,118 @@ Work tab is the section a recruiter opens first, and a portfolio for AI
 engineering roles that lists a single project understates the work far more than
 a thin detail page overstates it. #0006 still governs everything else — the
 writing placeholder stays drafted. Revisit per-record once the write-ups land.
+
+**#0025 — The themed routes get the record design (2026-08-24).** `/work`,
+`/work/[slug]`, `/writing` and `/writing/[slug]` now render inside
+`RecordFrame` — status bar, bracket nav, the 880px column, registry footer —
+with the head panel, numbered field grid and numbered section heads from the
+`SafiyrFile` and `GenieResolved` artboards. What they carried before was not
+"the old provisional styling"; it was nothing. Those pages styled themselves
+with `u-soft`, `u-mono`, `u-rule` and `u-faint`, which are defined in
+`plain.css` — the stylesheet belonging to the *other* root layout — so on an
+archive route all four resolved to no rule at all. The `(archive)` root layout
+is `<body>{children}</body>` and only `/` supplied its own chrome, so those
+pages also had no header, no footer, no column and no measure: Safiyr's 2,500
+words set at whatever the viewport was, flush to both edges. This is the page
+every citation on the homepage points at. `RecordFrame` and the source-rail CSS
+had been written for exactly this and were rendered by nothing. Considered
+copying the `u-*` rules into `globals.css` (rejected: it makes four dead
+classes into four live ones that mean nothing in this design's vocabulary, and
+the point of #0016's split is that the two stylesheets do not share a language).
+
+**#0026 — Mobile is built, from the artboard that already existed (2026-08-24).
+Supersedes #0022.** #0022 held the phone layout back because no artboard had
+been drawn, and improvising one in CSS would have made a design decision nobody
+took. The artboard existed: `MobileRec`, 390px, the fifth board on the canvas.
+It had simply fallen out of the repo's memory. Below 1140px the layout is that
+board — the record panel stacked, the portrait at 104×124 with the first fields
+flowing around it, `Archive#` dropping under the title, and the panel following
+underneath the record rather than beside it. Above 1140px the desktop design
+runs exactly as drawn on its fixed 1080px column, untouched. Two states, both
+drawn; nothing in between is invented, because nothing in between was drawn.
+The 608px row #0022 called load-bearing is released only inside the narrow
+breakpoint, and only because the panel stops being a capped scroll container in
+the same rule — the single-screen premise the definite height protects is a
+wide-layout premise. One behaviour is new rather than drawn: on the stacked
+layout a tapped claim changes a panel that is off-screen below, so the panel is
+scrolled into view. Considered keeping #0022 and shipping desktop-only
+(rejected: the artboard's absence was the entire stated reason for the hold,
+and it was not absent).
+
+**#0027 — The 404 is the NOTHING ON FILE state (2026-08-24).** An unmatched URL
+renders the archive's own "no source backs this" screen — same rust, same box,
+same sentence structure — rather than an error page. A 404 *is* #0023 one layer
+down: the archive was asked for a record it does not hold, and it would rather
+say so than improvise one. It is `global-not-found.tsx` rather than
+`not-found.tsx` because this app has two root layouts (#0016), so there is no
+single layout a global 404 could compose from; that is the documented case the
+convention exists for, and the cost is that the file carries its own `<html>`,
+fonts and stylesheet, plus one experimental flag in `next.config.ts`. Considered
+a `not-found.tsx` inside `(archive)` (rejected: it catches `notFound()` thrown
+inside that segment, not the mistyped URL, which is the case that actually
+happens — and the stock Next 404 is Helvetica on white, which is the single
+most off-key screen the site could show).
+
+**#0028 — The site ships a share card (2026-08-24).** `opengraph-image.tsx`
+renders the record itself at 1200×630: the status path, `1_7 /`,
+`EZZEDDINE, ALI`, the archive ID, and OPEN TO ROLES in green. This site is read
+by people who were *sent* a link, so an unfurl in Slack or LinkedIn is the first
+frame of the design most readers see, and the default is a bare title and a grey
+box. Two details are load-bearing. Space Mono is fetched at build time, because
+the image renderer has no system fonts and a monospace stack silently becomes
+sans — which drops the one thing that makes the card read as the archive; the
+fetch is wrapped so a build without network degrades the card rather than
+failing, since a share image is not worth a build. And the green live dot is
+drawn as a box, not typed as `●`: Space Mono has no U+25CF and there is no
+fallback face to borrow one from, so the glyph renders as notdef. The file lives
+in `(archive)/`, not at the app root — at the root it built as a route but was
+linked from nothing.
+
+**#0029 — A draft is hidden by URL, not only from the index (2026-08-24).**
+#0006 says drafts render in dev and are hidden in production. It was half true:
+`listEntries` filtered them out of the indexes, but `generateStaticParams` was
+built from `listSlugs`, which reads the filesystem, so every draft was
+prerendered and served to anyone with the URL. Params now come from the filtered
+list, and with `dynamicParams = false` a draft is a 404 in production and works
+in dev — which is what #0006 always said. Found because the production build
+listed `/writing/placeholder`.
+
+**#0030 — The folder tabs are questions the record has already answered
+(2026-08-25).** Ali reversed #0011's shape without giving up its idea: instead
+of a visitor typing a question and a model composing an answer, the questions
+are fixed and the answers are written in advance. Pressing a tab echoes its
+question — `> what has he actually shipped?` — and streams a reply into the
+panel, followed by the rows it rests on and the sources it cites. The panel's
+State 4 was already drawn for this and rendered by nothing: `.ans-asked`,
+`.ans-p`, and an `.ans-fig` figure slot with a mono caption.
+
+Three things make it more than a section list with a delay. The reply cites the
+same numbered sources a marked claim opens, so the panel has one apparatus
+rather than two, and a reader who has clicked `[1]` in the summary already knows
+what a citation does. The stream is by token, not by character — a typewriter is
+a different and older machine, and a language model emits chunks, so words land
+in small bursts. And an answer with nothing behind it says so: Interests has no
+prose at all, only #0023's NOTHING ON FILE block, which is #0013's editorial
+rule arriving at the answer layer exactly as #0023 predicted it would.
+
+The stream is decoration over content, so it is built never to be the reason
+content is missing. It runs once per answer per session — returning from a cited
+source restores the reply rather than replaying it — it is skipped entirely
+under `prefers-reduced-motion`, the complete text sits in the panel's live
+region from the first frame so a screen reader never waits out an animation, and
+a timer watchdog lands the whole answer if `requestAnimationFrame` never fires,
+which is what happens in a backgrounded tab. Considered a fade-in instead of a
+stream (rejected: the fade is what any panel does, and the stream is the entire
+reason the tabs are questions), and considered leaving the suggestion chips
+under the query line (rejected: the tabs are the suggestions now, and one line
+of prose says so without duplicating them).
+
+**#0031 — Route names follow the tab names (2026-08-25).** `/work` became
+`/projects` and `/writing` became `/blog`, with `content/` moving to match. A
+tab reading PROJECTS over an address bar reading `/work` and a status path
+reading `\ARCHIVE\WORK\` is a seam a careful reader sees, and nothing is
+deployed yet (#0012), so the rename costs nothing now and gets more expensive
+every day after. Archive IDs were left alone: `ACD-WRK-SFY-001` stays `WRK`,
+because an identifier that changes when a shelf is relabelled is not an
+identifier, and a classification code that no longer matches the current folder
+name is what real archives look like.

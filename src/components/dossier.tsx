@@ -1,66 +1,125 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useState, type ReactNode } from "react";
-import { ArchiveId, Chips, Field, Panel, Portrait } from "@/components/record";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  ArchiveId,
+  Chips,
+  Field,
+  FieldGrid,
+  Panel,
+  Portrait,
+} from "@/components/record";
 import { SourcedContext, type Source } from "@/components/sourced";
+import { Streamed } from "@/components/streamed";
 import type { Evidence } from "@/lib/content";
+import { cx } from "@/lib/cx";
 
 /*
  * The personnel record: a dossier on the left, and one panel on the right that
  * is the only content surface on the page. DECISIONS.md #0019.
  *
- * Three gestures all put something into that single panel — clicking a marked
- * claim opens its source, clicking a folder tab renders a section, and (phase
- * two, #0011) the query line returns an agent answer. The panel never becomes
- * two panels, and the page never scrolls: the grid row is a definite height and
- * the panel body is the only thing inside it that scrolls.
+ * Every gesture on this page puts something into that one panel, and since
+ * #0030 they all put the same *kind* of thing into it. A folder tab is a
+ * question the record has already answered: it streams a reply, shows what the
+ * reply rests on, and cites the same numbered sources a marked claim opens. The
+ * query line at the foot is the one gesture still unbuilt, and when it lands it
+ * will render into a shape the reader has already been taught.
+ *
+ * The panel never becomes two panels, and the page never scrolls: the grid row
+ * is a definite height and the panel body is the only thing inside it that
+ * scrolls.
  */
 
-export type TabKey = "work" | "resume" | "contact";
+export type TabKey =
+  | "projects"
+  | "experience"
+  | "education"
+  | "interests"
+  | "blog";
 
-export type SectionRow = {
-  /** `01`–`04`. Curated position, not an array index. #0007. */
+export type AnswerRow = {
+  /** `01`-`04`. Curated position, not an array index. #0007. */
   n: string;
   title: string;
   /** Set only when the row genuinely goes somewhere. #0018. */
   href?: string;
+  /** System-voice detail on the right of the title: a place, a period. */
+  meta?: string;
+  /** Grades that detail when it is a state token rather than a date. #0014. */
+  metaTone?: "a" | "g" | "r" | "dim";
   summary: string;
-  chips: Evidence[];
+  chips?: Evidence[];
 };
 
-export type Section = { label: string; rows: SectionRow[]; note: string };
-
-/*
- * `answer` (State 4) is deliberately absent: its body is agent-generated prose
- * that does not exist yet, and a stub of it would be a fiction on a page whose
- * argument is that nothing here is fabricated. Its styling is in globals.css
- * under State 4, so phase two adds a branch and no layout work. #0011.
+/**
+ * A question the record has already answered.
+ *
+ * `say` is the reply itself, streamed. Leaving it empty is how an answer
+ * declines to have prose — the `nothing` block then becomes the whole reply,
+ * which is #0013's editorial rule stated in the first person.
  */
+export type Answer = {
+  label: string;
+  /** The question, echoed above the reply. */
+  asked: string;
+  say: string[];
+  rows?: AnswerRow[];
+  figure?: { src: string; alt: string; caption: string };
+  /** Source ids this reply rests on, opened from the reply's foot. */
+  cites?: string[];
+  /** Rendered instead of rows when the archive has nothing filed. #0023. */
+  nothing?: { head: string; body: string };
+  note: string;
+};
+
 type View =
   | { k: "rest" }
   | { k: "source"; id: string }
-  | { k: "section"; tab: TabKey }
-  | { k: "empty"; asked: string };
+  | { k: "answer"; tab: TabKey };
 
 const TABS: { key: TabKey; label: string }[] = [
-  { key: "work", label: "Work" },
-  { key: "resume", label: "Résumé" },
-  { key: "contact", label: "Contact" },
+  { key: "projects", label: "Projects" },
+  { key: "experience", label: "Experience" },
+  { key: "education", label: "Education" },
+  { key: "interests", label: "Interests" },
+  { key: "blog", label: "Blog" },
 ];
 
-/* Phase two turns these live. Until then they say what they are. #0021. */
-const SUGGESTIONS = [
-  "what has he actually shipped?",
-  "does he know react native?",
-];
+const TAB_KEYS: string[] = TABS.map((t) => t.key);
 
-function cx(...parts: (string | false | null | undefined)[]) {
-  return parts.filter(Boolean).join(" ");
+/* Below this the layout is stacked and the panel sits under the record. */
+const STACKED = "(max-width: 1139px)";
+
+/**
+ * On the stacked layout, a tapped tab or claim changes a panel that is
+ * off-screen below the record. Bring it into view.
+ *
+ * Guarded on the media query rather than on width alone, so the wide layout —
+ * where the panel is already beside the record — is untouched.
+ *
+ * The jump is instant on purpose. A smooth scroll can be silently dropped by
+ * the environment, which leaves the reader looking at an unchanged screen after
+ * a tap; landing there immediately always works. It also has to finish before
+ * the reply streams, or the answer writes itself off-screen.
+ */
+function revealPanel(id: string) {
+  if (typeof window === "undefined") return;
+  if (!window.matchMedia(STACKED).matches) return;
+  document
+    .getElementById(id)
+    ?.scrollIntoView({ behavior: "auto", block: "start" });
 }
 
 function isTab(value: string | null): value is TabKey {
-  return value === "work" || value === "resume" || value === "contact";
+  return value !== null && TAB_KEYS.includes(value);
 }
 
 /** `Link` for routes we own, a plain anchor for mail and the outside world. */
@@ -86,21 +145,32 @@ function Anchor({
 
 export function Dossier({
   sources,
-  sections,
+  answers,
   summary,
   presence,
 }: {
   sources: Source[];
-  sections: Record<TabKey, Section>;
+  answers: Record<TabKey, Answer>;
   /** The summary prose, with its `Claim`s, rendered on the server. */
   summary: ReactNode;
   presence: Evidence[];
 }) {
   const panelId = useId();
+  const frameId = `${panelId}-frame`;
+  /* Set when the reader opens something, cleared once the panel is revealed. */
+  const opened = useRef(false);
   const [view, setView] = useState<View>({ k: "rest" });
   /* Shallow stack, so `[ ← ]` returns where you came from rather than home. */
   const [stack, setStack] = useState<View[]>([]);
   const [active, setActive] = useState<string | null>(null);
+
+  /*
+   * An answer streams the first time it is asked for and never again. Coming
+   * back from a source it cited should return you to the reply you were
+   * reading, not replay it: streaming is how an answer arrives, not how it
+   * exists.
+   */
+  const [heard, setHeard] = useState<ReadonlySet<TabKey>>(new Set());
 
   const cited = sources.filter((s) => !s.context);
   const number: Record<string, number> = {};
@@ -113,32 +183,48 @@ export function Dossier({
   });
 
   /*
-   * Sections are linkable and the back button behaves, without the panel
-   * leaving the static HTML: `useSearchParams` would push everything above it
-   * to client rendering and fail the production build without a Suspense
-   * boundary, so we read the URL on mount and drive it with the History API,
-   * which Next integrates with its router.
+   * Answers are linkable and the back button behaves, without the panel leaving
+   * the static HTML: `useSearchParams` would push everything above it to client
+   * rendering and fail the production build without a Suspense boundary, so we
+   * read the URL on mount and drive it with the History API, which Next
+   * integrates with its router.
    */
   useEffect(() => {
     const sync = () => {
       const s = new URLSearchParams(window.location.search).get("s");
       setStack([]);
-      setView(isTab(s) ? { k: "section", tab: s } : { k: "rest" });
+      setView(isTab(s) ? { k: "answer", tab: s } : { k: "rest" });
     };
     sync();
     window.addEventListener("popstate", sync);
     return () => window.removeEventListener("popstate", sync);
   }, []);
 
+  /*
+   * After the commit, not during the handler. Switching the panel changes its
+   * height on the stacked layout, and a layout shift that large mid-flight
+   * cancels a scroll — so the scroll has to start once the new content is
+   * measured. The ref keeps it to reader-initiated opens: the mount-time URL
+   * sync also sets a view, and a page that scrolls itself on load is a
+   * different and worse thing.
+   */
+  useEffect(() => {
+    if (!opened.current) return;
+    opened.current = false;
+    revealPanel(frameId);
+  }, [view, frameId]);
+
   function openSource(id: string) {
     setStack((s) => [...s, view]);
     setView({ k: "source", id });
+    opened.current = true;
   }
 
   function openTab(tab: TabKey) {
     setStack([]);
-    setView({ k: "section", tab });
+    setView({ k: "answer", tab });
     window.history.pushState(null, "", `?s=${tab}`);
+    opened.current = true;
   }
 
   function back() {
@@ -154,35 +240,44 @@ export function Dossier({
     }
   }
 
-  const openSection = view.k === "section" ? sections[view.tab] : null;
+  const openTabKey = view.k === "answer" ? view.tab : null;
+  const answer = openTabKey ? answers[openTabKey] : null;
   const openSrc = view.k === "source" ? byId[view.id] : null;
+
+  /*
+   * An answer is "heard" once its reply has finished streaming, and that one
+   * fact drives both halves of the behaviour: the tail appears, and coming
+   * back to this answer later replays nothing.
+   */
+  const onStreamed = useCallback(() => {
+    if (openTabKey) {
+      setHeard((prev) => new Set(prev).add(openTabKey));
+    }
+  }, [openTabKey]);
+
+  const settled = openTabKey ? heard.has(openTabKey) : true;
 
   const headLabel =
     view.k === "rest"
       ? `Archive ref / ${cited.length} on file`
       : view.k === "source"
         ? `Ref [${number[view.id]}] / ${openSrc?.title ?? ""}`
-        : view.k === "section"
-          ? (openSection?.label ?? "")
-          : "Response / no source";
+        : `Response / ${answer?.label ?? ""}`;
 
   /* The return control names where it is actually going, not always home. */
   const prev = stack[stack.length - 1];
   const backLabel =
-    prev?.k === "section"
-      ? sections[prev.tab].label.split("/")[0].trim()
-      : prev?.k === "empty"
-        ? "response"
-        : "archive ref";
+    prev?.k === "answer" ? answers[prev.tab].label : "archive ref";
 
   return (
     <SourcedContext.Provider
       value={{ panelId, number, byId, active, setActive, open: openSource }}
     >
-      {/* Navigation is the folder tabs now — the bracket nav is gone. #0019. */}
-      <nav className="tabs" aria-label="Record sections">
+      {/* Navigation is the folder tabs now — the bracket nav is gone (#0019) —
+       * and each tab is a question the record answers when pressed (#0030). */}
+      <nav className="tabs" aria-label="Ask the record">
         {TABS.map((tab) => {
-          const on = view.k === "section" && view.tab === tab.key;
+          const on = openTabKey === tab.key;
           return on ? (
             <button
               key={tab.key}
@@ -204,10 +299,6 @@ export function Dossier({
             </button>
           );
         })}
-        {/* More sections are coming. The stub says so and does nothing. */}
-        <div className="tab-stub" aria-hidden="true">
-          <div className="tab-stub-in tab-label">+</div>
-        </div>
       </nav>
 
       <div className="dossier-grid">
@@ -231,31 +322,33 @@ export function Dossier({
             </div>
           </div>
 
-          <div className="mt-[18px] flex gap-[22px]">
+          <div className="dossier-id">
             <Portrait />
-            {/* Column-major: 2/3/4 down the left, 5/6/7 down the right. */}
-            <div className="grid flex-1 grid-cols-2 content-start gap-x-5 gap-y-4">
+            {/* Reading order. `FieldGrid` runs 2/3/4 down the left and 5/6/7
+             * down the right on the wide layout, and plain rows on the narrow
+             * one, without a second copy of the list. */}
+            <FieldGrid rows={3} className="dossier-fields">
               <Field n={2} label="Node">
                 Beirut, LB
-              </Field>
-              <Field n={5} label="Status" tone="g">
-                Open to roles
               </Field>
               <Field n={3} label="Discipline">
                 Software / AI eng
               </Field>
-              <Field n={6} label="Lang">
-                AR / EN / FR
-              </Field>
               <Field n={4} label="Origin">
                 Electrical eng
+              </Field>
+              <Field n={5} label="Status" tone="g">
+                Open to roles
+              </Field>
+              <Field n={6} label="Lang">
+                AR / EN / FR
               </Field>
               <Field n={7} label="Contact">
                 <a className="val-link" href="mailto:ali@alicodes.dev">
                   ali@alicodes.dev
                 </a>
               </Field>
-            </div>
+            </FieldGrid>
           </div>
 
           <div
@@ -285,7 +378,7 @@ export function Dossier({
           </div>
         </Panel>
 
-        <Panel className="col-start-3 h-full min-h-0" inner="pnl-in">
+        <Panel id={frameId} className="h-full min-h-0" inner="pnl-in">
           <div className="pnl-head">
             <h2 className="pnl-head-l">{headLabel}</h2>
             {view.k !== "rest" ? (
@@ -334,7 +427,8 @@ export function Dossier({
                   </button>
                 ))}
                 <div className="pnl-note pnl-note-rule">
-                  Every source backing the record. Open one, or ask below.
+                  Every source backing the record. Open one, or press a tab
+                  above to ask.
                 </div>
               </div>
             ) : null}
@@ -376,51 +470,117 @@ export function Dossier({
               </div>
             ) : null}
 
-            {view.k === "section" && openSection ? (
+            {/*
+             * State 4. The question, then the reply, then what the reply rests
+             * on. The tail is held back until the stream settles, so the reply
+             * finishes being a reply before it becomes a list.
+             */}
+            {view.k === "answer" && answer && openTabKey ? (
               <div>
-                {openSection.rows.map((row) => (
-                  <div key={row.n} className="sec-row">
-                    <div className="flex items-baseline gap-[11px]">
-                      <span className="sec-n">{row.n}</span>
-                      <div className="min-w-0">
-                        {row.href ? (
-                          <Anchor href={row.href} className="sec-t block">
-                            {row.title}
-                          </Anchor>
-                        ) : (
-                          <div className="sec-t">{row.title}</div>
-                        )}
-                        <p className="sec-s">{row.summary}</p>
-                        <div className="mt-[9px]">
-                          <Chips items={row.chips} />
+                <div className="ans-asked">&gt; {answer.asked}</div>
+
+                {answer.say.length ? (
+                  <div className="ans-say">
+                    <Streamed
+                      key={openTabKey}
+                      paragraphs={answer.say}
+                      instant={heard.has(openTabKey)}
+                      onDone={onStreamed}
+                    />
+                  </div>
+                ) : null}
+
+                {settled || !answer.say.length ? (
+                  <div className="ans-tail">
+                    {answer.figure ? (
+                      <figure className="ans-fig">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={answer.figure.src}
+                          alt={answer.figure.alt}
+                          className="ans-fig-img"
+                        />
+                        <figcaption className="ans-fig-cap">
+                          {answer.figure.caption}
+                        </figcaption>
+                      </figure>
+                    ) : null}
+
+                    {answer.nothing ? (
+                      <div className="nof">
+                        <div className="nof-h">{answer.nothing.head}</div>
+                        <p className="nof-p">{answer.nothing.body}</p>
+                      </div>
+                    ) : null}
+
+                    {answer.rows?.length ? (
+                      <div className="ans-rows">
+                        {answer.rows.map((row) => (
+                          <div key={row.n} className="sec-row">
+                            <div className="flex items-baseline gap-[11px]">
+                              <span className="sec-n">{row.n}</span>
+                              <div className="min-w-0 flex-1">
+                                <div className="sec-head">
+                                  {row.href ? (
+                                    <Anchor href={row.href} className="sec-t">
+                                      {row.title}
+                                    </Anchor>
+                                  ) : (
+                                    <div className="sec-t">{row.title}</div>
+                                  )}
+                                  {row.meta ? (
+                                    <div
+                                      className={cx(
+                                        "sec-meta",
+                                        row.metaTone && `val-${row.metaTone}`,
+                                      )}
+                                    >
+                                      {row.meta}
+                                    </div>
+                                  ) : null}
+                                </div>
+                                <p className="sec-s">{row.summary}</p>
+                                {row.chips?.length ? (
+                                  <div className="mt-[9px]">
+                                    <Chips items={row.chips} />
+                                  </div>
+                                ) : null}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+
+                    {/* The reply's citations, opening the same source cards a
+                     * marked claim opens. One apparatus, not two. #0030. */}
+                    {answer.cites?.length ? (
+                      <div className="ans-cites">
+                        <div className="lbl-s">Drawn from /</div>
+                        <div className="ans-cite-row">
+                          {answer.cites.map((id) => (
+                            <button
+                              key={id}
+                              type="button"
+                              className="ans-cite"
+                              onClick={() => openSource(id)}
+                              onMouseEnter={() => setActive(id)}
+                              onMouseLeave={() => setActive(null)}
+                              onFocus={() => setActive(id)}
+                              onBlur={() => setActive(null)}
+                            >
+                              [{number[id]}] {byId[id]?.title}
+                            </button>
+                          ))}
                         </div>
                       </div>
+                    ) : null}
+
+                    <div className="pnl-note pnl-note-rule">
+                      {answer.note}
                     </div>
                   </div>
-                ))}
-                <div className="pnl-note">{openSection.note}</div>
-              </div>
-            ) : null}
-
-            {/*
-             * State 5. Not an error state — #0013's editorial rule executing at
-             * the agent layer, which is why it is built first-class rather than
-             * as a fallback (#0023). Unreachable until #0021's input is live.
-             */}
-            {view.k === "empty" ? (
-              <div>
-                <div className="ans-asked">&gt; {view.asked}</div>
-                <div className="nof">
-                  <div className="nof-h">Nothing on file</div>
-                  <p className="nof-p">
-                    No source in this archive backs an answer to that. Rather
-                    than write one, the record says so.
-                  </p>
-                </div>
-                <div className="pnl-note mt-4">
-                  The agent answers from the same sources the claims cite. If it
-                  is not filed, there is no answer to give.
-                </div>
+                ) : null}
               </div>
             ) : null}
           </div>
@@ -449,13 +609,11 @@ export function Dossier({
                 [ send ]
               </span>
             </div>
-            <div className="mt-[10px] flex flex-wrap gap-[5px]">
-              {SUGGESTIONS.map((s) => (
-                <span key={s} className="q-chip">
-                  &gt; {s}
-                </span>
-              ))}
-            </div>
+            {/* What the suggestion chips used to say, in one line instead:
+             * the tabs are the questions this thing can already answer. */}
+            <p className="q-note">
+              {TABS.length} answers are already on file — the tabs above.
+            </p>
           </div>
         </Panel>
       </div>

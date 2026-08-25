@@ -1,26 +1,27 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { cx } from "@/lib/cx";
 
 /*
  * Archive chrome: the status bar across the top, the bracket nav under it, and
  * the registry footer that closes a record. #0014.
  *
  * The status-bar path and the record meta are per-page — the artboards show
- * \ARCHIVE\PERSONNEL\ + SYSTEM ONLINE on the index and \ARCHIVE\WORK\SAFIYR\ +
- * RECORD 01 OF 04 on a work file — so pages pass them rather than the chrome
+ * \ARCHIVE\PERSONNEL\ + SYSTEM ONLINE on the index and \ARCHIVE\PROJECTS\SAFIYR\ +
+ * RECORD 01 OF 04 on a project file — so pages pass them rather than the chrome
  * inferring them from the route. Keeps every page a server component.
  */
 
-type NavKey = "index" | "work" | "resume";
+type NavKey = "index" | "projects" | "resume";
 
 /*
  * `/about` is gone — its content is field rows in the record now (#0019) — and
- * `/writing` stays out until it has something in it. The homepage passes no
+ * `/blog` stays out until it has something in it. The homepage passes no
  * `active` at all: its navigation is the folder tabs above the record.
  */
 const NAV: { key: NavKey; href: string; label: string }[] = [
   { key: "index", href: "/", label: "Index" },
-  { key: "work", href: "/work", label: "Work" },
+  { key: "projects", href: "/projects", label: "Projects" },
   { key: "resume", href: "/resume", label: "Résumé" },
 ];
 
@@ -29,9 +30,7 @@ export function SystemOnline() {
   return (
     <span>
       System online
-      <span className="ml-2" style={{ color: "var(--green)" }}>
-        &#9679;
-      </span>
+      <span className="dot-live">&#9679;</span>
     </span>
   );
 }
@@ -41,7 +40,7 @@ export function SiteHeader({
   meta,
   active,
 }: {
-  /** Path shown in the status bar, e.g. ["work", "safiyr"]. */
+  /** Path shown in the status bar, e.g. ["projects", "safiyr"]. */
   segments: string[];
   meta: ReactNode;
   /** Omit to render the status bar alone, with no bracket nav under it. */
@@ -53,24 +52,19 @@ export function SiteHeader({
 
   return (
     <header>
-      <div
-        className="mono flex items-center justify-between gap-4 px-4 py-[10px] uppercase sm:px-7"
-        style={{
-          fontSize: "9px",
-          letterSpacing: "0.16em",
-          color: "var(--amber-dim)",
-          borderBottom: "1px solid var(--rule)",
-        }}
-      >
-        <span className="truncate">{path}</span>
+      <div className="statusbar">
+        {/* The full path is the accessible name; the screen shows what fits. */}
+        <span className="statusbar-path" title={path}>
+          {path}
+        </span>
         <span className="shrink-0">{meta}</span>
       </div>
 
       {active === undefined ? null : (
-        <nav className="flex flex-wrap gap-x-[9px] gap-y-2 px-4 pt-[14px] sm:px-7">
+        <nav className="navbar" aria-label="Archive sections">
           {NAV.map((item) =>
             item.key === active ? (
-              <span key={item.key} className="navb navb-on">
+              <span key={item.key} className="navb navb-on" aria-current="page">
                 [ x {item.label} ]
               </span>
             ) : (
@@ -89,22 +83,14 @@ export function SiteHeader({
 export function RegistryFooter({
   left,
   right,
-  className = "mt-10",
+  className,
 }: {
   left: ReactNode;
   right: ReactNode;
   className?: string;
 }) {
   return (
-    <footer
-      className={`mono flex flex-wrap justify-between gap-x-6 gap-y-2 pt-3 uppercase ${className}`}
-      style={{
-        fontSize: "9px",
-        letterSpacing: "0.15em",
-        color: "var(--ink-faint)",
-        borderTop: "1px solid var(--rule)",
-      }}
-    >
+    <footer className={cx("registry", className)}>
       <span>{left}</span>
       <span>{right}</span>
     </footer>
@@ -114,22 +100,17 @@ export function RegistryFooter({
 /** The centered `> PERSONNEL RECORD <` banner that opens a record. */
 export function RecordBanner({ children }: { children: ReactNode }) {
   return (
-    <div
-      className="mono mb-4 text-center uppercase"
-      style={{
-        fontSize: "11px",
-        letterSpacing: "0.34em",
-        color: "var(--amber)",
-      }}
-    >
+    <div className="banner">
       &gt; {children} &lt;
     </div>
   );
 }
 
-/*
- * The page template every artboard shares: status bar, bracket nav, a centered
- * 880px column (620 measure + 48 gutter + 212 rail), and the registry footer.
+/**
+ * The page template every artboard outside `/` shares: status bar, bracket nav,
+ * a centred 880px column (620 measure + 48 gutter + 212 rail), and the registry
+ * footer. `/` does not use this — it composes its own chrome around a fixed
+ * 1080px column, because the dossier grid is wider than a record page. #0019.
  */
 export function RecordFrame({
   segments,
@@ -149,7 +130,7 @@ export function RecordFrame({
   return (
     <>
       <SiteHeader segments={segments} meta={meta} active={active} />
-      <main className="mx-auto w-full max-w-[880px] px-4 pt-8 pb-14 sm:px-7">
+      <main className="record-col">
         {banner ? <RecordBanner>{banner}</RecordBanner> : null}
         {children}
         <RegistryFooter left={footer.left} right={footer.right} />

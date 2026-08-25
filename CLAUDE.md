@@ -13,14 +13,17 @@ take credibility.
 
 ## Conventions
 
-- Content is MDX in `content/{work,writing}/`, reached via the `@content/*`
+- Content is MDX in `content/{projects,blog}/`, reached via the `@content/*`
   alias. Each file exports a `metadata` object — **not** YAML frontmatter.
 - `src/lib/content.ts` is the only thing that reads the content directory.
   Keep it that way: those same files become the retrieval corpus for the agent.
 - Draft entries (`draft: true`) render in dev and are hidden in production.
-- Work ordering is curated via `metadata.order`, never alphabetical.
+- Project ordering is curated via `metadata.order`, never alphabetical.
 - Run `pnpm build` before committing. It type-checks and prerenders every route,
   so it catches broken content imports that `pnpm dev` will happily tolerate.
+- A record's short state and source tokens (`metadata.state`, `metadata.source`)
+  are what the field grid and the registry render; `metadata.status` stays the
+  sentence, and closes the record in the registry footer.
 
 ## Gotchas
 
@@ -48,19 +51,39 @@ is display *and* body prose. Claims carry typed sources — and a claim with no
 source gets no mark, which is the point, not an oversight.
 
 `/` is the dossier record (#0019): a 620px dossier beside a 420px panel on a
-definite 608px row, with folder tabs for navigation. **That row height is
-load-bearing** — replace it with `auto` or `min-height` and the single-screen
-premise collapses. The panel is the page's only content surface; resist adding a
-second one. Desktop only, on purpose: a phone scrolls it sideways until someone
-draws a mobile artboard (#0022).
+definite 608px row. **That row height is load-bearing above 1140px** — replace
+it with `auto` or `min-height` there and the single-screen premise collapses.
+The panel is the page's only content surface; resist adding a second one.
 
-The remaining themed routes still carry the old provisional `u-*` classes;
-extend the design onto them rather than reviving those. Take exact values from
-the artboards, not from screenshots — `PROGRESS.md` links the canvas and the
-`design` skill reads it back with `--extract`.
+The folder tabs are not navigation. Each one is a question the record has
+already answered (#0030): pressing it echoes the question, streams a reply into
+the panel, and lands the rows and citations under it. A reply cites the same
+numbered sources a marked claim opens — one apparatus, never two — and an
+answer with nothing behind it renders #0023's NOTHING ON FILE rather than prose
+(Interests does, deliberately). The stream is `src/components/streamed.tsx`; it
+is decoration over content, so it runs once per answer per session, is skipped
+under `prefers-reduced-motion`, keeps the full text in the live region from the
+first frame, and has a timer watchdog because `requestAnimationFrame` never
+fires in a backgrounded tab. Route names follow the tab names (#0031).
+
+Below 1140px the layout is the `MobileRec` artboard (#0026, superseding #0022):
+one column, the panel stacked under the record, and the 608px row released —
+which is safe only because the panel stops being a capped scroll container in
+the same breakpoint. Two states, both drawn. Do not invent a third one in
+between. The tabs are the one thing that changes shape there: five will not fit
+on a line at 390px, so they drop the folder shoulder and wrap as square chips.
+
+Every themed route outside `/` renders inside `RecordFrame`: status bar,
+bracket nav, an 880px column (620 measure + 48 gutter + 212 rail), registry
+footer. The `u-*` classes are gone — they were never live on these routes,
+because they are defined in `plain.css`, which belongs to the other root layout
+(#0025). Take exact values from the artboards, not from screenshots;
+`PROGRESS.md` links the canvas and says how to read the boards back out of it.
 
 Anything a claim quotes lives in the record it quotes — `metadata.pulls` in the
 content file, or `src/lib/resume.ts` — never retyped into a component (#0020).
+That covers the tab answers too: their rows read out of `listEntries` and
+`resume.ts`, and only the reply prose is written on the page.
 
 `/resume` stays plain and unstyled (#0010). It is deliberately outside all of
 this, and has its own root layout under `src/app/(plain)/` so the theme cannot

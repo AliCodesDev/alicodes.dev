@@ -2,6 +2,8 @@
 
 import { createContext, useContext, type ReactNode } from "react";
 
+import { cx } from "@/lib/cx";
+
 /*
  * Sourced claims. DECISIONS.md #0013, #0017, #0019.
  *
@@ -33,7 +35,7 @@ export type Source = {
   backs?: string;
   /** The sentence pulled from the record. */
   quote?: string;
-  /** Exactly where it sits, e.g. `/work/safiyr § "Provenance"`. */
+  /** Exactly where it sits, e.g. `/projects/safiyr § "Provenance"`. */
   locus?: string;
   /** How to read this source's grade. */
   note?: string;
@@ -54,10 +56,6 @@ export type SourcedCtx = {
 };
 
 export const SourcedContext = createContext<SourcedCtx | null>(null);
-
-function cx(...parts: (string | false | null | undefined)[]) {
-  return parts.filter(Boolean).join(" ");
-}
 
 /**
  * A claim in prose. `src` names a citable source in the enclosing group;

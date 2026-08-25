@@ -3,120 +3,142 @@
 Running state. Updated at the end of every session. Detail lives in
 `DECISIONS.md` and the git log; this file answers "where are we, what's next".
 
-**Last updated:** 2026-08-22
+**Last updated:** 2026-08-25
 
 ---
 
 ## Where we are
 
-The design is built and merged to `main` (PR #1, merge commit `a31c3fd`).
 Next.js 16 App Router, TypeScript, Tailwind v4, MDX content. `pnpm dev` is all
 it takes to run. Nothing is deployed — #0012 still holds.
 
-Nine routes plus `/_not-found`, all prerendering static:
+**The whole site carries the design**, and since 2026-08-25 the folder tabs
+are the site's central gesture rather than its navigation. Pressing one asks a
+question the record has already answered: the question is echoed, the reply
+streams in, and the rows and citations behind it arrive under it. #0030.
+
+The tabs are Projects, Experience, Education, Interests, Blog, and the routes
+were renamed to match them — `/work` is `/projects`, `/writing` is `/blog`,
+`content/` moved with them. #0031.
+
+Twelve routes, all prerendering static:
 
 | Route | State |
 |---|---|
-| `/` | **Built.** The dossier + panel record — #0019 |
-| `/work` | Index, curated order — still on the old provisional classes |
-| `/work/safiyr` | **Written**, not yet in the design |
-| `/work/kirikou` | Stub — no write-up, but listed (#0024) |
-| `/work/genielearn` | Stub — no write-up, but listed (#0024) |
-| `/work/benzina` | Stub — no write-up, but listed (#0024) |
-| `/writing` | Index, empty in production — old classes, out of nav |
-| `/writing/placeholder` | Stub — draft |
-| `/resume` | Plain and print-friendly. Own root layout, outside the design |
+| `/` | **Built.** The dossier + five answered questions — #0019, #0030 |
+| `/projects` | **Built.** Registry listing — #0025 |
+| `/projects/safiyr` | **Built.** Record page; prose is not yet sourced |
+| `/projects/kirikou` | Built page, write-up pending (#0024) |
+| `/projects/genielearn` | Built page, write-up pending (#0024) |
+| `/projects/benzina` | Built page, write-up pending (#0024) |
+| `/blog` | **Built.** Empty state, out of the bracket nav |
+| `/blog/placeholder` | Draft — dev only, 404s in prod (#0029) |
+| `/resume` | Plain and print-friendly. Own root layout, untouched |
+| `/nope` (any 404) | **Built.** The NOTHING ON FILE state — #0027 |
+| `/opengraph-image` | **Built.** The share card — #0028 |
+| `/icon.svg` | The notched panel, in amber |
 
-`/about` is deleted. Its content is field rows in the record now — #0019.
+**Mobile is built** — #0026 supersedes #0022. Below 1140px the layout is the
+`MobileRec` artboard; above it the desktop design is untouched on its fixed
+1080px column. Five tabs do not fit on one line at 390px, so on that layout
+they lose the folder shoulder and wrap as square chips — a wrapped folder tab
+cuts into the row above it and strands the active tab away from the panel.
 
-**The homepage is the dossier record.** `DECISIONS.md` #0019–#0024, on top of
-#0013 (sourced claims), #0014 (archive record) and #0015 (the portrait).
+Standing as of this session:
 
-The shape: a 620px dossier beside a 420px panel on a definite 608px row, with
-folder tabs on the record's top edge. The panel is the page's only content
-surface, and three gestures feed it — a marked claim opens its source, a tab
-renders a section, and the query line will return an agent answer (#0011).
-
-Standing as of `a31c3fd`:
-
-- `src/app/(archive)/page.tsx` — assembles every source, section and row on the
-  server from `content/` and `src/lib/resume.ts`, then hands them to the client
-  component as props. The whole record is in the static HTML.
+- `src/app/(archive)/page.tsx` — the five answers, every source and every row,
+  assembled on the server and handed to the client component as props. Nothing
+  in them is retyped from a record (#0020).
 - `src/components/dossier.tsx` — the record, the folder tabs, and the panel's
-  state machine. Sections sync to `?s=<tab>` through the History API rather than
-  `useSearchParams`, which would have pushed the panel out of the prerender and
-  failed the build without a Suspense boundary.
-- `src/components/sourced.tsx` — `Claim` and its context. Hover previews, click
-  commits. The rail-as-column is gone; the panel replaced it.
-- `src/components/record.tsx` — panel, numbered field row, portrait, chips.
-- `src/components/site-chrome.tsx` — status bar, registry footer, and a bracket
-  nav that is now optional. `/` composes the pieces directly, so `RecordFrame`
-  is currently unused; it is kept for the themed routes that still need a page
-  template. `Pending` in `sourced.tsx` is unused for the same reason — it is the
-  evidence-not-yet-gathered block GENIELearn's page will want.
+  state machine. Answers sync to `?s=<tab>` through the History API. On the
+  stacked layout, opening one scrolls the panel into view.
+- `src/components/streamed.tsx` — the reply arriving, token by token. Runs once
+  per answer per session, skipped under `prefers-reduced-motion`, and backed by
+  a timer watchdog because `requestAnimationFrame` does not fire at all in a
+  backgrounded tab.
+- `src/components/record.tsx` — `Panel`, `Field`, `FieldGrid`, `RecordHead`,
+  `Portrait`, `ArchiveId`, `Chips`.
+- `src/components/site-chrome.tsx` — status bar, bracket nav, registry footer,
+  and `RecordFrame`, which every themed route outside `/` now renders inside.
+  It was written for this and had been used by nothing.
+- `src/components/sourced.tsx` — `Claim` and its context. `Pending` is still
+  unused; it is the evidence-not-yet-gathered block GENIELearn's page wants.
+- `src/lib/cx.ts` — one `cx`, which previously existed three times over.
 
-The three homepage sources quote out of `content/work/safiyr.mdx`'s
+The three homepage sources quote out of `content/projects/safiyr.mdx`'s
 `metadata.pulls` and `src/lib/resume.ts`; a missing pull fails the build (#0020).
 
-Archive IDs follow `ACD-WRK-<mnemonic>-<order>` and live in each content file's
-`metadata.archiveId`. A record with none reads NOT ISSUED — which is what
-GENIELearn's shows, deliberately.
+Archive IDs follow `ACD-WRK-<mnemonic>-<order>` in `metadata.archiveId`. A
+record with none reads NOT ISSUED — GENIELearn's does, deliberately.
 
-**Mockups:** the homepage was built from a `design_handoff_homepage_dossier`
-bundle — a README, an interactive `.dc.html` prototype, and its runtime. That
-bundle sits *outside* this repo, in the directory above it, so it will not
-survive a fresh clone; the built homepage and #0019–#0024 are the durable
-record of it. The nine earlier artboards on the design canvas still govern the
-work pages:
+## The artboards
+
+The design canvas is the source of truth for the design, not this repo:
 
 > https://claude.ai/code/artifact/97e5a4fe-5736-4171-a3b7-adbd14414fcf
 
-That canvas is the source of truth for the design, not this repo. A fresh
-session can read it back with the `design` skill's `--extract`.
+Nine boards: `Main` (the record), `Active` (claim active), `SafiyrFile`,
+`GenieFile` / `GenieResolved` (before and after evidence), **`MobileRec`
+(390px)**, `Spec2` (type & colour), and two v1s. `Spec2` was checked against
+`globals.css` this session and the token layer is faithful to it.
+
+**`MobileRec` is why #0022 is gone.** That board had been drawn all along; the
+repo had simply lost track of it, and its absence was the entire stated reason
+mobile was blocked. If a future session needs the boards again, they are
+embedded in the published artifact as JSON-escaped strings keyed by
+`<Name>.dc.html` — read the artifact to a file and `json.JSONDecoder().raw_decode`
+from each key. Do that before designing anything on these pages; take exact
+values from the boards, not from screenshots.
 
 ## What's next
 
-1. **The work pages.** `/work/safiyr` has its own artboards (`SafiyrFile`,
-   `GenieResolved`) and is the next design pass, then `/work` and `/writing`,
-   which still carry the old provisional `u-*` classes. Wire `Claim` into
-   `src/mdx-components.tsx` so a case study can source its own prose.
-2. **Mobile.** Blocked on a design decision, not on implementation — #0022. The
-   homepage is a fixed 1080px column and scrolls sideways on a phone. Get an
-   artboard for the panel before touching it.
+1. **Interests has nothing behind it.** The tab ships answering NOTHING ON FILE
+   by Ali's own call — the honest state until he says what goes there. It is
+   the one tab on the page that cannot answer.
+2. **Sourcing Safiyr's prose.** `Claim` is still not wired into
+   `src/mdx-components.tsx`, and the 212px column on a record page carries the
+   record's evidence chips, which is real data and not a placeholder for the
+   rail. The source-rail CSS (`.rail`, `.ref-*`, `.ref-context`) is still
+   rendered by nothing. Ali wants a different direction from the artboard's
+   rail and has not described it yet.
 3. **Kirikou and Benzina write-ups**, which is what makes #0024 sit right.
-4. **The ask-me agent** (#0011). The panel is its citation surface and its
-   `NOTHING ON FILE` state is already built (#0023); enabling the input is
-   #0021's one-line change.
+4. **The query line** (#0011, #0021). It is now the only gesture on the page
+   that does not answer, and #0030 gave it a shape to render into: whatever it
+   returns is an `Answer`, and an answer nothing backs is already built.
 
 ## Open threads
 
 - **Safiyr decision-record numbers.** The mockups cite `[NNN]` placeholders.
   Ali has 215 numbered records; the real numbers for the schema-level MDR
-  boundary and the rejected classifier-gate decision need filling in.
+  boundary and the rejected classifier-gate decision need filling in. Blocked
+  behind the direction call above.
 - **Kirikou and Benzina URLs.** Neither a repo nor a deployment URL exists
   anywhere in this repo, so their evidence chips render without an arrow
   (#0018). `TODO(ali)` in each content file; one line each makes them links.
-- **Mobile is undesigned, and now deliberately so** — #0022. The homepage is a
-  fixed 1080px column on a definite 608px row; a phone scrolls it sideways. The
-  likely shape is the panel becoming a drawer. Needs an artboard, not a guess.
-- **Panel work-row copy.** The rows read `metadata.summary` straight from each
-  content file, which is the right source (#0002) but was written for a full
-  page: Safiyr's runs four lines in a 420px column, and GENIELearn's title wraps
-  to two. Tighten the summaries at source rather than adding a second field.
-- **Source states are not linkable.** `?s=<tab>` makes a section shareable, but
+- **Answer-row copy.** The Projects rows read `metadata.summary` straight from
+  each content file, which is the right source (#0002) but was written for a
+  full page: Safiyr's runs four lines in a 420px column, now underneath a reply
+  that has already said much the same thing. Tighten the summaries at source
+  rather than adding a second field.
+- **Source states are not linkable.** `?s=<tab>` makes an answer shareable, but
   an open source is client state only. `?ref=<id>` would make any claim's source
-  a URL — small, and very much in the spirit of the thing.
+  a URL — small, and very much in the spirit of the thing. It would also give
+  an answer's citations somewhere real to point.
 - **Safiyr diagram** — the provenance pipeline SVG exists only in a Claude
   artifact, not yet in the site page. Needs either an MDX-imported component or
-  inline SVG. Do it when the design is built.
+  inline SVG.
 - **Safiyr write-up, unconfirmed details** — whether "sole engineer" needs a
   co-founder acknowledgment, whether the €30/month figure earns its place,
   whether the demo's pinned specialty should be mentioned at all.
 - **`resume.pdf`** does not exist yet. `/resume` links to it. Drop it in
   `public/`.
 - **Education dates** — `TODO(ali)` in `src/lib/resume.ts`. The CV has the MSc
-  starting and ending before the BEng. Now public on the resume page, and the
-  homepage's `[3]` quotes the BEng line out of that same file.
+  starting and ending before the BEng (2017–2021 against 2018–2022). Public on
+  the resume page, and the homepage's `[3]` quotes the BEng line out of that
+  same file. The Education answer neither repeats the error nor invents a
+  replacement: it shows the two degrees in the order they were taken and prints
+  no years at all. One real date in `resume.ts` plus `meta: item.dates` in the
+  homepage's `STUDY` map, and it stops hedging.
 - **No LinkedIn or Instagram URL** anywhere in the repo. Both presence chips
   carry the linkable grade (`tone: "link"`) and render amber but arrow-less
   until Ali supplies them; one `href` each in `PRESENCE` makes them links.
@@ -125,8 +147,11 @@ session can read it back with the `design` skill's `--extract`.
   institution-hosted. The degree proves the credential, not the work — link
   UPF's verification page rather than hosting the certificate PDF, which
   carries a student number and verification code. The GENIELearn project link
-  is *context*, never a citation: it proves the project exists, not that he was
-  on it. Keep the "the lab whose work feeds GENIELearn" phrasing.
+  is *context*, never a citation. Keep the "the lab whose work feeds GENIELearn"
+  phrasing.
+- **`globalNotFound` is an experimental flag** (#0027). It is the documented
+  route for an app with two root layouts, but it is experimental — if a future
+  Next release moves it, the fallback is a `not-found.tsx` per route group.
 - **Safiyr redeploy** — optional, wanted. Synthetic patients only: no real
   health data means no Article 9 processing and no HDS requirement, so it can be
   hosted cheaply. Frontends on Vercel, FastAPI on Fly or Railway, Postgres on
@@ -138,16 +163,13 @@ session can read it back with the `design` skill's `--extract`.
   white-on-transparent, tinted at render time through a CSS mask so it follows
   the amber token. Built by `scripts/dither-portrait.py`; rerun it if the
   palette or the frame size changes. #0015.
+- `src/app/icon.svg` — the notched panel in amber. Hand-written, no build step.
 - `assets/` and `frontend-inspo/` are gitignored. `assets/` holds the raw ID
   photo (only the processed output ships); `frontend-inspo/` holds visual
   reference scraped from the web.
 
 ## Housekeeping outside this repo
 
-- ~~`AliCodesDev/wazife` has Claude memory files committed and public.~~ Done
-  2026-08-22: contents were benign (a note that he is job hunting and why he
-  built Wazife), so no history rewrite. Untracked and `.claude/` gitignored in
-  commit `68d8d07`. Old commits still hold a copy, which is fine for that text.
 - `wazife`'s README is still the stock Vite template. Public, and linked from
   this site's Contact section, so it is part of what a recruiter reads.
 - GitHub profile has no bio, no location, no link. Pin Safiyr's public

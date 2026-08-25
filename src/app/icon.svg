@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- The notched panel, which is the design's signature shape. #0014. -->
+  <path d="M0 5 L5 0 H27 L32 5 V27 L27 32 H5 L0 27 Z" fill="#0A0B09"/>
+  <path d="M0 5 L5 0 H27 L32 5 V27 L27 32 H5 L0 27 Z" fill="none" stroke="#E3A63F" stroke-width="2"/>
+  <path d="M9 23 L16 9 L23 23" fill="none" stroke="#E3A63F" stroke-width="2.6" stroke-linejoin="miter"/>
+</svg>
