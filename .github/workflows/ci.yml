@@ -1,0 +1,35 @@
+# The same two commands CLAUDE.md says to run before committing, run on every
+# PR and on main so a miss cannot land silently. `pnpm build` is the real
+# gate: it type-checks and prerenders every route, which is what catches
+# broken content imports that `pnpm dev` tolerates.
+#
+# The OG image fetches Space Mono from Google Fonts at build time; the fetch
+# is wrapped so a runner without network degrades the card instead of failing
+# the build (#0028) — no CI special-casing needed.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Reads the pinned version from package.json's `packageManager`.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm lint
+
+      - run: pnpm build
