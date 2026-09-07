@@ -3,7 +3,7 @@
 Running state. Updated at the end of every session. Detail lives in
 `DECISIONS.md` and the git log; this file answers "where are we, what's next".
 
-**Last updated:** 2026-08-25
+**Last updated:** 2026-09-07
 
 ---
 
@@ -98,13 +98,39 @@ values from the boards, not from screenshots.
 2. **Sourcing Safiyr's prose.** `Claim` is still not wired into
    `src/mdx-components.tsx`, and the 212px column on a record page carries the
    record's evidence chips, which is real data and not a placeholder for the
-   rail. The source-rail CSS (`.rail`, `.ref-*`, `.ref-context`) is still
-   rendered by nothing. Ali wants a different direction from the artboard's
-   rail and has not described it yet.
+   rail. Ali wants a different direction from the artboard's rail and has not
+   described it yet.
+
+   The CSS waiting for that rail is `.rail`, `.rail-body`, `.rail-chev`,
+   `.rail-count`, `.ref-body`, `.ref-context`, `.ref-n-on` and `.ref-quote`.
+   **Do not read that as "the `.ref-*` classes are dead"** — the rest of the
+   family (`.ref`, `.ref-n`, `.ref-t`, `.ref-k`, `.ref-btn`, `.ref-link`,
+   `.ref-off`) is what draws the panel's REST state, and deleting it would take
+   the source list with it. This note used to say `.ref-*` as a family was
+   rendered by nothing, which was wrong.
 3. **Kirikou and Benzina write-ups**, which is what makes #0024 sit right.
 4. **The query line** (#0011, #0021). It is now the only gesture on the page
    that does not answer, and #0030 gave it a shape to render into: whatever it
    returns is an `Answer`, and an answer nothing backs is already built.
+
+## Built but unused
+
+- **The answer figure slot.** `Answer` takes an optional
+  `figure: { src, alt, caption }`, rendered as `.ans-fig` / `.ans-fig-img` /
+  `.ans-fig-cap` — a bordered image with a mono caption under it, drawn on the
+  artboards and wired but deliberately unfilled (#0030). Ali raised photos and
+  then did not supply any, and no image is invented for him. Drop a file in
+  `public/` and add the field to one answer in `src/app/(archive)/page.tsx`.
+- **`Pending`** in `src/components/sourced.tsx` — the evidence-not-yet-gathered
+  block GENIELearn's record wants. Still rendered by nothing.
+- **`.tab-stub` / `.tab-stub-in`** are dead as of #0030: they styled the `+`
+  tab that meant "more sections coming", and with five tabs the set is the set.
+  Two rules near the tab block in `globals.css`, plus their `clip-path: none`
+  line in the stacked-layout media query. They can go whenever someone is in
+  there.
+- **`.mono`** and `.prose .table-scroll` are defined and used by nothing. The
+  table wrapper expects markup no rehype plugin generates — `next.config.ts`
+  runs `remark-gfm` and `rehype-slug` only.
 
 ## Open threads
 
@@ -130,8 +156,11 @@ values from the boards, not from screenshots.
 - **Safiyr write-up, unconfirmed details** — whether "sole engineer" needs a
   co-founder acknowledgment, whether the €30/month figure earns its place,
   whether the demo's pinned specialty should be mentioned at all.
-- **`resume.pdf`** does not exist yet. `/resume` links to it. Drop it in
-  `public/`.
+- **`resume.pdf`** does not exist, and `/resume` does not link to it — the
+  page carries only the mailto and the GitHub URL, so there is no broken link
+  to fix. Dropping the file in `public/` and adding the anchor is one change,
+  not two; `TODO(ali)` at the top of `src/app/(plain)/resume/page.tsx`. (This
+  entry used to claim the page already linked to a missing file.)
 - **Education dates** — `TODO(ali)` in `src/lib/resume.ts`. The CV has the MSc
   starting and ending before the BEng (2017–2021 against 2018–2022). Public on
   the resume page, and the homepage's `[3]` quotes the BEng line out of that

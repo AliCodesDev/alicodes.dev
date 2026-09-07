@@ -66,6 +66,10 @@ under `prefers-reduced-motion`, keeps the full text in the live region from the
 first frame, and has a timer watchdog because `requestAnimationFrame` never
 fires in a backgrounded tab. Route names follow the tab names (#0031).
 
+An `Answer` also takes an optional `figure: { src, alt, caption }` — a bordered
+image with a mono caption, drawn on the artboards and wired up, and shipping
+unfilled because no image was supplied. It is there; do not rebuild it.
+
 Below 1140px the layout is the `MobileRec` artboard (#0026, superseding #0022):
 one column, the panel stacked under the record, and the 608px row released —
 which is safe only because the panel stops being a capped scroll container in
@@ -75,10 +79,15 @@ on a line at 390px, so they drop the folder shoulder and wrap as square chips.
 
 Every themed route outside `/` renders inside `RecordFrame`: status bar,
 bracket nav, an 880px column (620 measure + 48 gutter + 212 rail), registry
-footer. The `u-*` classes are gone — they were never live on these routes,
-because they are defined in `plain.css`, which belongs to the other root layout
-(#0025). Take exact values from the artboards, not from screenshots;
-`PROGRESS.md` links the canvas and says how to read the boards back out of it.
+footer. No themed route writes a `u-*` class any more — but **the four of them
+still exist and `/resume` still depends on them**, in
+`src/app/(plain)/plain.css`, which belongs to the other root layout (#0025).
+They were never live on archive routes, which is why #0025 stopped using them
+there; they are not dead code, and deleting them takes the résumé's styling
+with it.
+
+Take exact values from the artboards, not from screenshots; `PROGRESS.md` links
+the canvas and says how to read the boards back out of it.
 
 Anything a claim quotes lives in the record it quotes — `metadata.pulls` in the
 content file, or `src/lib/resume.ts` — never retyped into a component (#0020).
