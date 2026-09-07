@@ -1,0 +1,205 @@
+/* ============================================================================
+ * THE NARROW LAYOUT — the `MobileRec` artboard (390px)
+ *
+ * #0022 held the phone layout back because no artboard had been drawn. One had:
+ * `MobileRec` on the design canvas. This is it — the record panel stacked, a
+ * smaller portrait beside the first fields, and the panel following underneath
+ * rather than beside.
+ *
+ * Two states, not three. Above the breakpoint the desktop design runs exactly
+ * as drawn on its fixed 1080px column; below it, this. Nothing in between is
+ * invented, because nothing in between was drawn.
+ *
+ * The 608px row goes away here, and that is safe *because* the panel stops
+ * being a capped scroll container in the same breakpoint: the single-screen
+ * premise the definite height protects only exists on the wide layout.
+ * ==========================================================================*/
+
+@media (max-width: 1139px) {
+  .dossier-col {
+    width: 100%;
+    max-width: 652px;
+    padding: 18px 16px 34px;
+  }
+
+  .dossier-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    gap: 18px;
+  }
+
+  /* One column of content, so the panel grows and the page scrolls instead. */
+  .pnl-in {
+    height: auto;
+  }
+  .pnl-body {
+    overflow-y: visible;
+  }
+
+  .statusbar {
+    padding: 9px 16px;
+    font-size: 8px;
+    letter-spacing: 0.14em;
+  }
+  .navbar {
+    padding: 12px 16px 0;
+  }
+  .record-col {
+    --pad: 16px;
+    padding-top: 20px;
+    padding-bottom: 34px;
+  }
+  .banner {
+    font-size: 9.5px;
+    letter-spacing: 0.3em;
+  }
+
+  /*
+   * Tabs stay the navigation; they stop being folder tabs.
+   *
+   * Five of them do not fit on one line at 390px, and a wrapped folder tab is
+   * a broken metaphor twice over: the shoulders cut into the row above, and an
+   * active tab on the first line sits detached from the panel it opens. On
+   * this layout the panel is already below the record rather than beside the
+   * tabs, so the shoulder has nothing to attach to — squaring them off and
+   * letting them wrap is the honest version of the same control.
+   */
+  .tabs {
+    padding-left: 4px;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .tab-on,
+  .tab-off,
+  .tab-off-in {
+    clip-path: none;
+  }
+  .tab-on,
+  .tab-off {
+    height: 28px;
+  }
+  .tab-label {
+    padding: 0 13px;
+    font-size: 9px;
+    letter-spacing: 0.13em;
+  }
+
+  .portrait-frame {
+    width: 104px;
+    height: 124px;
+  }
+
+  /*
+   * The portrait floats, so the first fields sit beside it and the rest run on
+   * underneath once they clear it — the `MobileRec` shape. A grid here would
+   * hold its whole box clear of the portrait and leave a dead column under it.
+   */
+  .dossier-id {
+    display: block;
+    gap: 0;
+  }
+  .dossier-id::after {
+    content: "";
+    display: block;
+    clear: both;
+  }
+  .dossier-id > .shrink-0 {
+    float: left;
+    margin: 0 14px 10px 0;
+  }
+  .dossier-fields {
+    display: block;
+    /*
+     * `align-content` on a block container makes it establish its own
+     * formatting context, and a box that does that sits *beside* a float
+     * instead of flowing around it — which is the whole effect wanted here.
+     * It is inherited from `.field-grid`, where it is right; here it is not.
+     */
+    align-content: normal;
+  }
+  .dossier-fields > * {
+    /*
+     * Each field is its own formatting context, so it sits wholly beside the
+     * portrait or wholly below it. Without this a field can straddle the
+     * float's bottom edge and have its label indented while its value is not.
+     */
+    display: flow-root;
+  }
+  .dossier-fields > * + * {
+    margin-top: 12px;
+  }
+  .dossier-fields .val {
+    font-size: 11.5px;
+  }
+
+  /* Plain rows, in reading order — the column-major trick is a wide-layout
+   * device and there is only one column here. */
+  .field-grid {
+    grid-auto-flow: row;
+    grid-template-rows: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 16px;
+  }
+
+  .rec-in {
+    padding: 16px;
+  }
+  .rec-top {
+    display: block;
+  }
+  /* Archive# drops under the title rather than fighting it for the line. */
+  .rec-top > * + * {
+    margin-top: 9px;
+    text-align: left;
+  }
+
+  .record-grid {
+    gap: 18px;
+  }
+
+  .prose {
+    font-size: 16px;
+  }
+  /* `SEC 02` is a wide-layout ornament; the number on the left is the one
+   * that carries information, and it is the one that stays. */
+  .prose-numbered h2 {
+    gap: 10px;
+  }
+  .prose-numbered h2::after {
+    display: none;
+  }
+
+  .reg-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .reg-meta {
+    grid-column: 2;
+    grid-row: 2;
+    text-align: left;
+    white-space: normal;
+    margin-top: 2px;
+  }
+  .reg-body {
+    grid-column: 2;
+    grid-row: 3;
+    margin-top: 8px;
+  }
+}
+
+/* Below the artboard's own width, give the chrome back its last few pixels. */
+@media (max-width: 420px) {
+  .statusbar {
+    letter-spacing: 0.1em;
+  }
+  .tabs {
+    gap: 4px;
+  }
+  .tab-label {
+    padding: 0 10px;
+  }
+}
+
+/* The panel is scrolled to on the stacked layout; leave the status bar room. */
+.panel {
+  scroll-margin-top: 12px;
+}

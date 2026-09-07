@@ -1,0 +1,54 @@
+/* ---- The query line. Visible, honestly labelled, and inert. #0021. ---- */
+
+.q-row {
+  margin-top: 10px;
+  border: 1px solid var(--rule);
+  background: var(--void);
+  padding: 10px 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.q-prompt,
+.q-send {
+  flex: none;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  color: var(--ink-faint);
+}
+.q-prompt {
+  font-size: 12px;
+}
+.q-send {
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.q-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  color: var(--ink);
+  padding: 0;
+}
+.q-input::placeholder {
+  color: var(--ink-faint);
+  opacity: 1;
+}
+.q-input:disabled {
+  cursor: not-allowed;
+}
+/* One line where the suggestion chips used to be, saying what the tabs are. */
+.q-note {
+  margin-top: 9px;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  line-height: 1.55;
+  color: var(--ink-faint);
+}
+

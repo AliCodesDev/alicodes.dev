@@ -1,0 +1,79 @@
+/* ============================================================================
+ * ARCHIVE CHROME
+ *
+ * Was a pile of inline `style` objects in site-chrome.tsx. The stylesheet
+ * already owns the design's vocabulary; a component reaching past it to set a
+ * hex value is how a token stops being a token.
+ * ==========================================================================*/
+
+.statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 28px;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--amber-dim);
+}
+.statusbar-path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dot-live {
+  margin-left: 8px;
+  color: var(--green);
+}
+
+.navbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  padding: 14px 28px 0;
+}
+
+.registry {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 24px;
+  margin-top: 38px;
+  border-top: 1px solid var(--rule);
+  padding-top: 12px;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.banner {
+  margin-bottom: 16px;
+  text-align: center;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+/*
+ * 620 measure + 48 gutter + 212 rail. The column every record page sits in.
+ *
+ * `max-width` counts the padding, because preflight makes everything
+ * border-box — so the 880 is stated as content plus its own gutters. Write it
+ * as a bare 880 and the measure quietly becomes 564, which is a different
+ * design.
+ */
+.record-col {
+  --pad: 28px;
+  width: 100%;
+  max-width: calc(880px + 2 * var(--pad));
+  margin: 0 auto;
+  padding: 32px var(--pad) 52px;
+}
+

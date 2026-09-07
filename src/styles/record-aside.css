@@ -1,0 +1,22 @@
+/* A block in the 212px column, under its own ruled label. */
+.rail-block-h {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 8px;
+  margin-bottom: 14px;
+}
+
+/* An entry page has no rail, so its prose stays in the measure column. */
+.rec-body-col {
+  grid-column: 1;
+}
+
+/*
+ * The record grid's second row needs air between the head panel and the prose.
+ * `align-items: start` means the row is defined by the taller cell, so this
+ * cannot come from a margin on the panel.
+ */
+.record-grid > .prose,
+.record-grid > .rail-block {
+  margin-top: 14px;
+}
+

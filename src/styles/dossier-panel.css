@@ -1,0 +1,402 @@
+/* ---- The panel: one window, five states ---- */
+
+.pnl-in {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pnl-head {
+  flex: none;
+  padding: 16px 18px 11px;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.pnl-head-l {
+  min-width: 0;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pnl-back {
+  flex: none;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber-dim);
+}
+.pnl-back:hover {
+  color: var(--amber);
+}
+
+.pnl-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px;
+}
+.pnl-body::-webkit-scrollbar {
+  width: 6px;
+}
+.pnl-body::-webkit-scrollbar-track {
+  background: var(--void);
+}
+.pnl-body::-webkit-scrollbar-thumb {
+  background: var(--rule);
+}
+
+.pnl-foot {
+  flex: none;
+  border-top: 1px solid var(--rule);
+  padding: 13px 18px 15px;
+}
+
+/* A closing line under a dashed rule. Shared by REST and RESPONSE. */
+.pnl-note {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  line-height: 1.8;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.pnl-note-rule {
+  margin-top: 8px;
+  border-top: 1px dashed var(--rule);
+  padding-top: 13px;
+}
+
+/* ---- State 1: REST — every source backing the record ---- */
+
+/*
+ * The resting state is shorter than the panel, so the note that closes it is
+ * pushed to the foot rather than left floating under the last source with a
+ * couple of hundred pixels of nothing beneath it. The panel has a definite
+ * height by design (#0022); this is what makes that height look deliberate.
+ */
+.pnl-refs {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 100%;
+}
+.pnl-refs > .pnl-note-rule {
+  margin-top: auto;
+}
+/* A ref entry in the panel is a button; strip the agent styling, keep .ref. */
+.ref-btn {
+  display: flex;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* ---- State 2: SOURCE — a claim was clicked ---- */
+
+.src-n {
+  flex: none;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  background: var(--amber);
+  color: var(--void);
+  padding: 0 3px;
+  height: 14px;
+  line-height: 14px;
+  letter-spacing: 0.04em;
+}
+.src-id {
+  border-left: 2px solid var(--amber);
+  padding-left: 11px;
+  margin-top: -1px;
+}
+.src-t {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 11.5px;
+  line-height: 1.45;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink-lit);
+}
+.src-k {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-top: 5px;
+}
+.src-sec {
+  margin-top: 16px;
+  border-top: 1px solid var(--rule);
+  padding-top: 14px;
+}
+.src-sec-first {
+  margin-top: 18px;
+}
+/* The claim this source backs, quoted back at the reader. */
+.src-backs {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  margin-top: 7px;
+  text-wrap: pretty;
+}
+/* The sentence actually pulled from the record. */
+.src-quote {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink);
+  margin-top: 8px;
+  font-style: italic;
+  border-left: 2px solid var(--rule);
+  padding-left: 12px;
+  text-wrap: pretty;
+}
+.src-loc {
+  margin-top: 8px;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 10.5px;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  color: var(--ink-soft);
+}
+/* Amber only when the locus is genuinely reachable. #0018. */
+.src-loc-link {
+  color: var(--amber);
+}
+.src-note {
+  margin-top: 9px;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  line-height: 1.7;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ---- State 3: SECTION — a folder tab was clicked ---- */
+
+.sec-row {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+}
+.sec-n {
+  flex: none;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--amber-dim);
+}
+/* Title left, system-voice detail right: a period, a place, a state. */
+.sec-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.sec-t {
+  min-width: 0;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 12.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--amber);
+  line-height: 1.4;
+}
+.sec-meta {
+  flex: none;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  white-space: nowrap;
+}
+/* `.val-*` are single-class rules declared in voice.css, which globals.css
+ * imports earlier, so `.sec-meta`'s own colour beats them on source order.
+ * Restated at two classes, a graded detail keeps the grade the record gave
+ * it. #0014. */
+.sec-meta.val-a {
+  color: var(--amber);
+}
+.sec-meta.val-g {
+  color: var(--green);
+}
+.sec-meta.val-r {
+  color: var(--rust);
+}
+.sec-meta.val-dim {
+  color: var(--ink-dim);
+}
+.sec-s {
+  font-size: 13.5px;
+  line-height: 1.58;
+  color: var(--ink-dim);
+  margin-top: 5px;
+  text-wrap: pretty;
+}
+
+/* ---- State 4: RESPONSE ----
+ *
+ * A folder tab is a question the record has already answered (#0030), and the
+ * reply arrives streamed. Only once the reply has settled does its tail — the
+ * rows it rests on, the sources it cites — come in under it, so the answer
+ * finishes being an answer before it becomes a list.
+ */
+
+/* The question, echoed back before anything is claimed in reply. */
+.ans-asked {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  border-bottom: 1px dashed var(--rule);
+  padding-bottom: 11px;
+}
+.ans-say {
+  margin-top: 15px;
+}
+.ans-p {
+  font-size: 15px;
+  line-height: 1.68;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.ans-p + .ans-p {
+  margin-top: 13px;
+}
+
+/* The stream's cursor. Gone the moment the last token lands. */
+.ans-caret {
+  display: inline-block;
+  width: 6px;
+  height: 0.9em;
+  margin-left: 3px;
+  vertical-align: -0.06em;
+  background: var(--amber);
+  animation: ans-blink 1.06s steps(1, end) infinite;
+}
+@keyframes ans-blink {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  55.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Everything the reply rests on, arriving once the reply has. */
+.ans-tail {
+  animation: ans-settle 240ms ease-out both;
+}
+@keyframes ans-settle {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.ans-rows {
+  margin-top: 20px;
+}
+.ans-rows > .sec-row:last-child {
+  border-bottom: 0;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.ans-fig {
+  margin-top: 16px;
+  border: 1px solid var(--rule);
+  background: var(--void);
+  padding: 12px;
+}
+.ans-fig-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.ans-fig-cap {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-top: 9px;
+}
+
+/* The reply's citations: the same numbers, opening the same cards, as a
+ * marked claim's. One apparatus for both gestures, never two. #0030. */
+.ans-cites {
+  margin-top: 18px;
+}
+.ans-cite-row {
+  margin-top: 9px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ans-cite {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--amber-dim);
+  border: 1px solid var(--rule);
+  padding: 4px 7px;
+  text-align: left;
+}
+.ans-cite:hover {
+  color: var(--amber);
+  border-color: var(--amber-dim);
+}
+
+/* ---- State 5: NOTHING ON FILE (phase two) ----
+ *
+ * Not an error state. This is #0013's editorial rule executing at the agent
+ * layer: the archive would rather say it has nothing than write an answer no
+ * source backs. Built first-class, never as a fallback — #0023. --rust is
+ * #0014's one status that is neither live nor neutral.
+ */
+.nof {
+  margin-top: 20px;
+  border: 1px dashed var(--rust);
+  padding: 16px;
+}
+.nof-h {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--rust);
+}
+.nof-p {
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--ink-soft);
+  margin-top: 11px;
+  text-wrap: pretty;
+}
+

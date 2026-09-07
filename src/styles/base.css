@@ -1,0 +1,76 @@
+:root {
+  --void: #0a0b09;
+  --panel: #101210;
+  --rule: #2a2e29;
+  --grid-dot: #191d19;
+
+  --amber: #e3a63f;
+  --amber-dim: #8a6b2c;
+  --amber-wash: rgba(227, 166, 63, 0.1);
+  --amber-live: rgba(227, 166, 63, 0.2);
+  --amber-edge: rgba(227, 166, 63, 0.45);
+
+  /* Reserved. Live / verified / backed, and nothing else. */
+  --green: #43d98a;
+  --green-edge: rgba(67, 217, 138, 0.35);
+
+  /* Decommissioned — the one status that is neither live nor neutral. */
+  --rust: #b4553f;
+
+  --ink: #d8d6ce;
+  --ink-bright: #f0eae0;
+  --ink-lit: #f5efe2;
+  --ink-soft: #9a9f96;
+  --ink-dim: #7e837a;
+  --ink-faint: #5f645c;
+
+  --measure: 620px;
+  --rail: 212px;
+  --gutter: 48px;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--void);
+  background-image: radial-gradient(circle, var(--grid-dot) 1px, transparent 1px);
+  background-size: 30px 30px;
+  color: var(--ink);
+  font-family: var(--font-archivo), "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * CRT texture. Static, not animated — it is a surface, not an effect. Fixed so
+ * it does not scroll with the content, and inert to the pointer.
+ */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.5;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.28) 0px,
+    rgba(0, 0, 0, 0.28) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+a {
+  color: var(--amber);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--green);
+}
+:focus-visible {
+  outline: 1px solid var(--amber);
+  outline-offset: 2px;
+}
+

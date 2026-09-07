@@ -1,0 +1,84 @@
+/* ============================================================================
+ * The dossier homepage. DECISIONS.md #0019–#0022.
+ *
+ * The record is the subject; the panel beside it is everything you can look up
+ * about him. Three gestures feed that one panel — a marked claim, a folder tab,
+ * and (phase two) the query line.
+ *
+ * Desktop-only by decision, not by omission: the column is a fixed 1080px and a
+ * narrow screen scrolls it sideways. Improvising a phone layout here would be
+ * inventing a design that has not been drawn. #0022.
+ * ==========================================================================*/
+
+.dossier-col {
+  width: 1080px;
+  margin: 0 auto;
+  padding-top: 30px;
+  padding-bottom: 44px;
+}
+
+/*
+ * The row height is load-bearing. Without a definite height the panel's scroll
+ * container has nothing to be capped against, the taller column defines the
+ * row, and long panel content grows the page — which destroys the single-screen
+ * premise. Do not replace it with auto, min-height or fit-content.
+ */
+.dossier-grid {
+  display: grid;
+  grid-template-columns: 620px 420px;
+  grid-template-rows: 608px;
+  gap: 40px;
+  align-items: stretch;
+}
+
+/* ---- Folder tabs. The manila cut tab: flat top, slanted sides. ---- */
+
+/*
+ * The trapezoid is clip-path, never a border — clip-path shears a border away
+ * along the angled edges. Outlines are the padded-parent fill used throughout
+ * this design: an outer div in --rule with 1px padding over an inner fill,
+ * both clipped, the inner one pixel shallower at the slant.
+ */
+.tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  padding-left: 20px;
+}
+
+.tab-label {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 20px;
+}
+
+/* Active: taller than its siblings, and no bottom rule — it reads as
+ * continuous with the open folder beneath. Both details carry the metaphor. */
+.tab-on {
+  background: var(--amber);
+  color: var(--void);
+  height: 32px;
+  clip-path: polygon(11px 0, calc(100% - 11px) 0, 100% 100%, 0 100%);
+}
+
+.tab-off {
+  background: var(--rule);
+  padding: 1px 1px 0;
+  height: 28px;
+  clip-path: polygon(11px 0, calc(100% - 11px) 0, 100% 100%, 0 100%);
+}
+.tab-off-in {
+  background: var(--panel);
+  height: 100%;
+  color: var(--amber-dim);
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 100%, 0 100%);
+}
+.tab-off:hover .tab-off-in {
+  color: var(--amber);
+}
+

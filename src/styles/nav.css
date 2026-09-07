@@ -1,0 +1,17 @@
+/* ---- Bracket nav ---- */
+
+.navb {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.navb:hover { color: var(--amber); }
+.navb-on {
+  color: var(--void);
+  background: var(--amber);
+  padding: 2px 5px;
+}
+.navb-on:hover { color: var(--void); }
+

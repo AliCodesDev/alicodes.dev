@@ -1,0 +1,59 @@
+/* ---- The source rail ---- */
+
+.ref {
+  display: flex;
+  gap: 9px;
+  position: relative;
+  transition: opacity 90ms linear;
+}
+.ref-n {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  color: var(--amber);
+  flex: none;
+  letter-spacing: 0.04em;
+}
+.ref-n-on {
+  background: var(--amber);
+  color: var(--void);
+  padding: 0 3px;
+  height: 14px;
+  line-height: 14px;
+}
+.ref-t {
+  display: block;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 10.5px;
+  line-height: 1.5;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.ref-k {
+  display: block;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber-dim);
+  margin-top: 4px;
+}
+/* Linkable sources are amber and carry an arrow. Cited-not-linkable stay plain. */
+.ref-link .ref-t,
+.ref-link .ref-k {
+  color: var(--amber);
+}
+.ref-off { opacity: 0.32; }
+.ref-body {
+  border-left: 2px solid var(--amber);
+  padding-left: 10px;
+  margin-top: -1px;
+}
+.ref-quote {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin-top: 8px;
+  font-style: italic;
+}
+
