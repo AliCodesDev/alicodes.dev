@@ -10,7 +10,10 @@ Running state. Updated at the end of every session. Detail lives in
 ## Where we are
 
 Next.js 16 App Router, TypeScript, Tailwind v4, MDX content. `pnpm dev` is all
-it takes to run. Nothing is deployed — #0012 still holds.
+it takes to run. **Deployed:** the build is a static export (#0033) published
+to GitHub Pages by `.github/workflows/deploy.yml` on every push to `main`,
+serving `alicodes.dev` — #0012's condition was met on 2026-09-07 and the
+domain came off the shelf.
 
 **The whole site carries the design**, and since 2026-08-25 the folder tabs
 are the site's central gesture rather than its navigation. Pressing one asks a
@@ -21,7 +24,7 @@ The tabs are Projects, Experience, Education, Interests, Blog, and the routes
 were renamed to match them — `/work` is `/projects`, `/writing` is `/blog`,
 `content/` moved with them. #0031.
 
-Twelve routes, all prerendering static:
+Eleven routes, all prerendering static, plus one parked:
 
 | Route | State |
 |---|---|
@@ -32,7 +35,7 @@ Twelve routes, all prerendering static:
 | `/projects/genielearn` | Built page, write-up pending (#0024) |
 | `/projects/benzina` | Built page, write-up pending (#0024) |
 | `/blog` | **Built.** Empty state, out of the bracket nav |
-| `/blog/placeholder` | Draft — dev only, 404s in prod (#0029) |
+| `/blog/[slug]` | **Parked** as `_slug` — the export refuses a dynamic route with zero published entries. Renaming it back and publishing the first entry are the same PR (#0033) |
 | `/resume` | Plain and print-friendly. Own root layout, untouched |
 | `/nope` (any 404) | **Built.** The NOTHING ON FILE state — #0027 |
 | `/opengraph-image` | **Built.** The share card — #0028 |

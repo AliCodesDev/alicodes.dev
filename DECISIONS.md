@@ -400,3 +400,32 @@ language — #0014 — and scoping it would fight the `.val-*` / `.sec-meta`
 grading system, which works *because* of the cascade). Considered regrouping
 rules by component while splitting (rejected: any reorder risks a silent
 cascade change, and navigability was the goal, not purity).
+
+**#0033 — Deployed as a static export to GitHub Pages, at alicodes.dev
+(2026-09-07). Resolves #0012's wait.** Every route already prerendered, so
+`output: "export"` is a one-line admission of what the build was, not a
+restructure: `next build` emits `out/`, and `.github/workflows/deploy.yml`
+publishes it on every push to `main` — the same build ci.yml has already
+proven on the PR. The repo already lives on GitHub, so CI, review and deploy
+share one platform and no new vendor gets a say. The export forced two things
+into the open. First, a dynamic route may not generate zero pages, and with
+every blog entry a draft, `/blog/[slug]` generates zero in production — so the
+folder is parked under Next's private-folder convention as `_slug`, which is a
+rename, not a deletion. Restoring the route and publishing the first entry are
+the same PR by construction: the build fails on either half alone, and dev
+draft preview works on that branch throughout because dev keeps drafts.
+Production behaviour is unchanged — those URLs 404ed before (#0029) and 404
+after. Second, the OG route now declares `dynamic = "force-static"`, which is
+the export's required spelling for what the route already did. The domain:
+alicodes.dev is the Pages custom domain, Namecheap's records point the apex at
+Pages, and `metadataBase` was already `https://alicodes.dev` in all three
+layouts, so no canonical URL moved. What this deliberately gives up is a
+server: nothing on the site uses one, and the phase-two query line (#0011) is
+not foreclosed — a static page can call an external endpoint; only the
+endpoint needs a host, and that decision belongs to the session that builds
+it. Considered Vercel (rejected: it earns its keep when a site needs its
+runtime, and this one needs a file server; a second platform for what GitHub
+already hosts is surface without argument). Considered publishing the
+placeholder entry to keep `[slug]` live (rejected: shipping a placeholder to
+satisfy a build constraint is the archive faking an answer, which is the one
+thing it is built not to do).

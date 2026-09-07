@@ -1,3 +1,12 @@
+/*
+ * PARKED, not dead (#0033): `_slug` is Next's private-folder convention, so
+ * this route does not exist until the folder is renamed back to `[slug]`.
+ * The static export refuses a dynamic route whose generateStaticParams comes
+ * back empty, and with every blog entry a draft, in production it does.
+ * Restoring the route and publishing the first entry are the same PR: rename
+ * the folder, flip the entry's `draft`, and the build passes again — and dev
+ * draft preview works on that branch throughout, because dev keeps drafts.
+ */
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import { RecordFrame } from "@/components/site-chrome";

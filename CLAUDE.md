@@ -18,7 +18,15 @@ take credibility.
 - `src/lib/content.ts` is the only thing that reads the content directory.
   Keep it that way: those same files become the retrieval corpus for the agent.
 - Draft entries (`draft: true`) render in dev and are hidden in production.
+  One consequence bites: the static export refuses a dynamic route that
+  generates zero pages, so while no blog entry is published, the blog's
+  `[slug]` folder is parked as `_slug` (Next's private-folder convention).
+  Renaming it back and publishing the first entry are the same PR — the build
+  fails on either half alone (#0033).
 - Project ordering is curated via `metadata.order`, never alphabetical.
+- The build is a static export (#0033): `pnpm build` emits the site into
+  `out/`, `next start` no longer runs it, and every push to `main` deploys
+  `out/` to GitHub Pages at alicodes.dev via `.github/workflows/deploy.yml`.
 - Run `pnpm build` before committing. It type-checks and prerenders every route,
   so it catches broken content imports that `pnpm dev` will happily tolerate.
   CI (`.github/workflows/ci.yml`) runs `pnpm lint` and `pnpm build` on every PR
