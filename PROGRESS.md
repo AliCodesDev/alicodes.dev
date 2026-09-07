@@ -123,14 +123,12 @@ values from the boards, not from screenshots.
   `public/` and add the field to one answer in `src/app/(archive)/page.tsx`.
 - **`Pending`** in `src/components/sourced.tsx` — the evidence-not-yet-gathered
   block GENIELearn's record wants. Still rendered by nothing.
-- **`.tab-stub` / `.tab-stub-in`** are dead as of #0030: they styled the `+`
-  tab that meant "more sections coming", and with five tabs the set is the set.
-  Two rules near the tab block in `globals.css`, plus their `clip-path: none`
-  line in the stacked-layout media query. They can go whenever someone is in
-  there.
-- **`.mono`** and `.prose .table-scroll` are defined and used by nothing. The
-  table wrapper expects markup no rehype plugin generates — `next.config.ts`
-  runs `remark-gfm` and `rehype-slug` only.
+
+(`.tab-stub` / `.tab-stub-in`, `.mono`, `.prose .table-scroll` and a duplicate
+`.rec-fields` block used to be listed here; all four were deleted on
+2026-09-07 after proving nothing renders them — grep across `src/` and
+`content/`, plus an audit of every template-literal `className`, of which the
+only dynamic form anywhere is `` `val-${tone}` ``.)
 
 ## Open threads
 

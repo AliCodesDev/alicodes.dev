@@ -85,10 +85,6 @@ a:hover {
 
 /* ---- System voice. If it is set in mono, the archive is talking. ---- */
 
-.mono {
-  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
-}
-
 .lbl {
   font-family: var(--font-mono), "SF Mono", Menlo, monospace;
   font-size: 9px;
@@ -411,7 +407,6 @@ a:hover {
   font-weight: 400;
 }
 .prose :is(h2, h3) { scroll-margin-top: 5rem; }
-.prose .table-scroll { overflow-x: auto; }
 
 /* ---- The record grid: measure + rail ---- */
 
@@ -583,23 +578,6 @@ a:hover {
 }
 .tab-off:hover .tab-off-in {
   color: var(--amber);
-}
-
-/* The `+` stub is a non-interactive affordance: more tabs are coming. */
-.tab-stub {
-  background: var(--rule);
-  padding: 1px 1px 0;
-  height: 23px;
-  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 100%, 0 100%);
-}
-.tab-stub-in {
-  background: var(--void);
-  height: 100%;
-  clip-path: polygon(9px 0, calc(100% - 9px) 0, 100% 100%, 0 100%);
-  font-size: 9.5px;
-  color: var(--ink-faint);
-  padding: 0 15px;
-  letter-spacing: 0;
 }
 
 /* ---- The panel: one window, five states ---- */
@@ -1427,12 +1405,6 @@ a.reg-t:hover {
   flex: 1;
   gap: 16px 20px;
 }
-.rec-fields {
-  gap: 15px 20px;
-  margin-top: 18px;
-  border-top: 1px solid var(--rule);
-  padding-top: 16px;
-}
 
 .dossier-id {
   display: flex;
@@ -1513,9 +1485,7 @@ a.reg-t:hover {
   }
   .tab-on,
   .tab-off,
-  .tab-off-in,
-  .tab-stub,
-  .tab-stub-in {
+  .tab-off-in {
     clip-path: none;
   }
   .tab-on,
