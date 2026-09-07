@@ -371,3 +371,32 @@ every day after. Archive IDs were left alone: `ACD-WRK-SFY-001` stays `WRK`,
 because an identifier that changes when a shelf is relabelled is not an
 identifier, and a classification code that no longer matches the current folder
 name is what real archives look like.
+
+**#0032 — The stylesheet is ordered partials; the import list is the cascade
+(2026-09-07).** `globals.css` had grown to 1,619 lines — 30% of the codebase in
+one file. It is now `src/styles/`, one file per concern, cut at the section
+banners that already delimited them, with `globals.css` staying in place as the
+manifest so both root layouts' imports are untouched. The method was a pure
+sequential partition: no rule moved with respect to any other, proven by the
+partials concatenating byte-identically to the old file's body and the compiled
+CSS chunks hashing identically before and after. That conservatism is the
+decision. Source order is load-bearing in this stylesheet — `.sec-meta`'s
+colour beats the `.val-*` tones purely on position, and the narrow layout wins
+over everything it restates by coming last — so the import list in
+`globals.css` *is* the cascade, and sorting or regrouping it changes the
+design. Two seams are inherited rather than clean: `record-rail.css` and
+`dossier-extras.css` hold what the organic growth put next to each other, and
+they keep honest comments instead of a risky regrouping. In the same pass the
+CSS proven dead was deleted (`.tab-stub`, `.mono`, `.prose .table-scroll`, a
+duplicate `.rec-fields` block) — proven, not assumed: the only dynamically
+built class name in the codebase is `` `val-${tone}` ``, so grep is conclusive
+— while the deliberately parked pieces (the rail-in-waiting rules, `.pending`,
+the `.ans-fig` slot) travelled intact with their keep-notes. `dossier.tsx`
+split the same day on the same terms: state machine, views and `Answer` types
+as `src/components/dossier/`, with an `index.ts` keeping the import path, and
+the prerendered homepage DOM byte-identical to before. Considered CSS Modules
+per component (rejected: the design's vocabulary is deliberately one global
+language — #0014 — and scoping it would fight the `.val-*` / `.sec-meta`
+grading system, which works *because* of the cascade). Considered regrouping
+rules by component while splitting (rejected: any reorder risks a silent
+cascade change, and navigability was the goal, not purity).

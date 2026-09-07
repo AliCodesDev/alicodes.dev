@@ -42,7 +42,10 @@ content/projects/*.mdx    case studies — the source of truth for the site
 content/blog/*.mdx
 src/app/(archive)/        the themed site
 src/app/(plain)/resume/   the résumé, deliberately outside the theme
-src/components/           record, dossier, answers, claims, chrome
+src/components/           record, dossier (state machine, views, answer types),
+                          claims, chrome
+src/styles/               the archive stylesheet, one file per concern —
+                          src/app/globals.css imports them in cascade order
 src/lib/content.ts        the only thing that reads content/
 ```
 

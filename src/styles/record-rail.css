@@ -1,6 +1,15 @@
 /* ---- The record grid: measure + rail ---- */
 
 /*
+ * An inherited seam (#0032): this slice mixes the record grid, which is live,
+ * with the rail-in-waiting rules — .rail, .rail-body, .rail-chev, .rail-count,
+ * .ref-body and .ref-context here, .ref-n-on and .ref-quote over in refs.css —
+ * which nothing renders yet. They wait on the Safiyr-sourcing direction call
+ * (PROGRESS.md, "What's next"), and they are kept on purpose: do not delete
+ * them for looking unused.
+ */
+
+/*
  * 620 measure + 48 gutter + 212 rail = the 880 column the artboards use.
  * Below the breakpoint the rail stops being a column and becomes an inline
  * disclosure under the prose — #0013.

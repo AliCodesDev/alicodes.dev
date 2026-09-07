@@ -34,6 +34,12 @@ take credibility.
   `node_modules/next/dist/docs/` before writing routing or config code. `params`
   is a `Promise` and must be awaited.
 - `create-next-app` refuses to scaffold into a non-empty directory.
+- **Tailwind v4 scans every non-gitignored file for class candidates —
+  markdown included.** A word in this file or `DECISIONS.md` that happens to
+  spell a utility name gets its rule emitted into the compiled CSS of both
+  root layouts. Found when a decision-log sentence grew the CSS chunks by one
+  positioning rule. Harmless unless markup accidentally uses the class, but it
+  breaks byte-identical CSS comparisons; prefer a synonym in prose.
 - **A running `next dev` poisons `pnpm build` if you check out an older
   commit.** The dev server regenerates `.next/dev/types/validator.ts` against
   whatever is on disk, so checking out a commit from before the `(archive)` /
@@ -43,8 +49,11 @@ take credibility.
 
 ## Style
 
-The visual direction is `DECISIONS.md` #0014 and #0019, and `globals.css` holds
-it: amber `#E3A63F` on near-black `#0A0B09`; green `#43D98A` means live/verified
+The visual direction is `DECISIONS.md` #0014 and #0019, and `src/styles/` holds
+it — one file per concern, imported by `src/app/globals.css` in an order that is
+load-bearing (#0032): the cascade resolves same-specificity conflicts by source
+position, so never sort or regroup that import list. The palette: amber
+`#E3A63F` on near-black `#0A0B09`; green `#43D98A` means live/verified
 and nothing else — never decoration, and never a disabled control (#0021); Space
 Mono is the system voice (labels, IDs, chips, tabs, notes, footers) and Archivo
 is display *and* body prose. Claims carry typed sources — and a claim with no

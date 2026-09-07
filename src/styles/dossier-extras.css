@@ -1,5 +1,11 @@
 /* ---- Dossier odds and ends ---- */
 
+/*
+ * An inherited seam (#0032): the grab-bag the dossier work left next to each
+ * other — link values, presence chips, the claim hint, the small label steps.
+ * Kept in original order rather than regrouped, because order is the cascade.
+ */
+
 /* A field value that is genuinely a link. */
 .val-link {
   color: var(--amber);
