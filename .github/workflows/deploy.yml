@@ -1,0 +1,55 @@
+# Publishes the static export to GitHub Pages, which serves alicodes.dev
+# (#0033). Every push to main deploys; ci.yml has already proven the same
+# build on the PR, so a failure here is environmental, not a code miss.
+#
+# The build steps mirror ci.yml deliberately — same pnpm pin from
+# package.json's `packageManager`, same Node line — so the artifact deployed
+# is the artifact CI checked.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time, and never cancel one mid-flight for a newer push —
+# the newer run just waits its turn.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -2,6 +2,11 @@ import createMDX from "@next/mdx";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Static export: `next build` emits the whole site into `out/`, which is
+  // what GitHub Pages serves at alicodes.dev (#0033). Every route already
+  // prerendered before this; the flag only changes where the files land.
+  // `next start` stops working under it — serve `out/` with any file server.
+  output: "export",
   reactCompiler: true,
   pageExtensions: ["ts", "tsx", "md", "mdx"],
   experimental: {

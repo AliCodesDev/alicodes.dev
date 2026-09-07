@@ -30,6 +30,10 @@ pnpm lint
 Run `pnpm build` before committing. It catches broken content imports that
 `pnpm dev` will happily tolerate. CI runs both commands on every PR.
 
+The build is a static export: `pnpm build` writes the whole site into `out/`,
+and every push to `main` publishes it to GitHub Pages, which serves
+[alicodes.dev](https://alicodes.dev).
+
 ## Stack
 
 Next.js 16 (App Router, Turbopack), TypeScript, Tailwind v4, MDX. Every route

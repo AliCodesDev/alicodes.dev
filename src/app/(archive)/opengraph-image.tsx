@@ -11,6 +11,11 @@ import { ImageResponse } from "next/og";
  * fetch is wrapped: a build without network still produces a card, in the
  * default face, rather than failing. A share image is not worth a build.
  */
+// The static export (#0033) requires metadata routes to declare themselves
+// static; without this line `next build` refuses the route under
+// `output: "export"`. It changes nothing else — the card was always built once.
+export const dynamic = "force-static";
+
 export const alt = "Ali Ezzeddine — Software / AI Engineer";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
