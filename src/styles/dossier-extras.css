@@ -1,0 +1,60 @@
+/* ---- Dossier odds and ends ---- */
+
+/*
+ * An inherited seam (#0032): the grab-bag the dossier work left next to each
+ * other — link values, presence chips, the claim hint, the small label steps.
+ * Kept in original order rather than regrouped, because order is the cascade.
+ */
+
+/* A field value that is genuinely a link. */
+.val-link {
+  color: var(--amber);
+  border-bottom: 1px solid var(--amber-edge);
+  padding-bottom: 1px;
+}
+
+/* Presence chips run one step larger than the section-row chips. */
+.presence-row .chip {
+  padding: 4px 7px;
+}
+/* Linkable: amber, and the arrow comes from the href. #0018. */
+.chip-a {
+  color: var(--amber);
+  border-color: var(--amber-edge);
+}
+
+/* The hint that makes the claim affordance discoverable at all. */
+.hint {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/*
+ * A claim is now a click target as well as a hover one. The hit area wraps
+ * both the text and its marker as a single tab stop; it stays a span because a
+ * claim runs mid-sentence and has to fragment across lines, which a button box
+ * will not do.
+ */
+.claim-hit {
+  cursor: pointer;
+}
+
+/* Two smaller steps of the label voice, for the panel's interior. */
+.lbl-s {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber-dim);
+}
+.lbl-xs {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+

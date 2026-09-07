@@ -1,0 +1,28 @@
+/* ---- System voice. If it is set in mono, the archive is talking. ---- */
+
+.lbl {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber-dim);
+}
+
+.val {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-top: 4px;
+}
+.val-a { color: var(--amber); }
+.val-g { color: var(--green); }
+.val-r { color: var(--rust); }
+.val-dim { color: var(--ink-dim); }
+
+.archive-id {
+  border-bottom: 1px solid var(--amber);
+  padding-bottom: 2px;
+}
+

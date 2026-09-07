@@ -1,0 +1,20 @@
+/* ============================================================================
+ * REDUCED MOTION
+ *
+ * There is almost no motion in this design on purpose, but what there is —
+ * claim and source cross-fades, the rail chevron — should not run for someone
+ * who has asked for stillness. The CRT texture is static already: it is a
+ * surface, not an effect.
+ * ==========================================================================*/
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

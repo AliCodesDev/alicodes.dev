@@ -1,0 +1,82 @@
+/* ============================================================================
+ * THE WORK RECORD — `SafiyrFile` and `GenieResolved` artboards
+ * ==========================================================================*/
+
+.rec-in {
+  padding: 22px 24px;
+}
+.rec-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 14px;
+}
+/* The record's title, in the system voice: this is the archive naming it. */
+.rec-title {
+  font-size: 17px;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+  font-weight: 400;
+  text-wrap: balance;
+}
+.rec-lede {
+  margin-top: 15px;
+  font-size: 16px;
+  line-height: 1.66;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+.rec-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px 20px;
+  margin-top: 18px;
+  border-top: 1px solid var(--rule);
+  padding-top: 16px;
+}
+
+/*
+ * The rail's legend: how to read a source's grade, said once at the top of the
+ * column the grades appear in. #0013's vocabulary, in the reader's hands.
+ */
+.rail-legend {
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 8px;
+  line-height: 1.8;
+}
+.rail-legend b {
+  color: var(--amber);
+  font-weight: 400;
+}
+
+/*
+ * Numbered section heads — `2_4 / Non-MDR by construction`, `SEC 02`.
+ *
+ * Both numbers come off one CSS counter, so they cannot drift apart. The total
+ * cannot be counted in CSS, so the page sets `--sec-total` from the source
+ * (`countSections`), and `.prose-numbered` is the opt-in: without it the
+ * heading renders bare, which is what an unnumbered page should do.
+ */
+.prose-numbered {
+  counter-reset: sec;
+}
+.prose-numbered h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  counter-increment: sec;
+}
+.prose-numbered h2::before {
+  content: counter(sec) "_" var(--sec-total) " / ";
+  flex: none;
+}
+.prose-numbered h2::after {
+  content: "Sec " counter(sec, decimal-leading-zero);
+  flex: none;
+  margin-left: auto;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--amber-dim);
+}
+

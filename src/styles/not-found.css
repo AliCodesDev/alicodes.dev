@@ -1,0 +1,14 @@
+/* The 404 sits in the middle of the screen rather than at the top of it. */
+.nf-col {
+  min-height: calc(100vh - 34px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: calc(620px + 2 * var(--pad));
+}
+.nf-nav {
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 26px;
+}
+

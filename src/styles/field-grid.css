@@ -1,0 +1,27 @@
+/* ============================================================================
+ * THE FIELD GRID
+ *
+ * Column-major: `2/3/4` down the left, `5/6/7` down the right. Fixing the row
+ * count and letting the flow run in columns gets that from a list in reading
+ * order, so the DOM order is the order it is read aloud. `--rows` is set by the
+ * component from the field count.
+ * ==========================================================================*/
+
+.field-grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(var(--rows, 3), auto);
+  grid-auto-columns: minmax(0, 1fr);
+  align-content: start;
+}
+.dossier-fields {
+  flex: 1;
+  gap: 16px 20px;
+}
+
+.dossier-id {
+  display: flex;
+  gap: 22px;
+  margin-top: 18px;
+}
+

@@ -1,0 +1,97 @@
+/* ---- The record grid: measure + rail ---- */
+
+/*
+ * An inherited seam (#0032): this slice mixes the record grid, which is live,
+ * with the rail-in-waiting rules — .rail, .rail-body, .rail-chev, .rail-count,
+ * .ref-body and .ref-context here, .ref-n-on and .ref-quote over in refs.css —
+ * which nothing renders yet. They wait on the Safiyr-sourcing direction call
+ * (PROGRESS.md, "What's next"), and they are kept on purpose: do not delete
+ * them for looking unused.
+ */
+
+/*
+ * 620 measure + 48 gutter + 212 rail = the 880 column the artboards use.
+ * Below the breakpoint the rail stops being a column and becomes an inline
+ * disclosure under the prose — #0013.
+ */
+.record-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .record-grid {
+    grid-template-columns: minmax(0, 1fr) var(--rail);
+    gap: var(--gutter);
+  }
+}
+
+.rail > summary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  height: 46px;
+  border-top: 1px solid var(--rule);
+  cursor: pointer;
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 9px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.rail > summary::-webkit-details-marker { display: none; }
+.rail-chev { transition: transform 120ms ease; }
+.rail[open] .rail-chev { transform: rotate(180deg); }
+
+.rail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-left: 2px solid rgba(227, 166, 63, 0.3);
+  padding-left: 11px;
+  padding-bottom: 6px;
+}
+
+/* Desktop: the rail is a static column, always open, with a ruled header. */
+@media (min-width: 900px) {
+  .rail > summary {
+    height: auto;
+    border-top: 0;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+    cursor: default;
+    pointer-events: none;
+    color: var(--amber-dim);
+  }
+  .rail-count,
+  .rail-chev { display: none; }
+  .rail-body {
+    border-left: 0;
+    padding-left: 0;
+    gap: 20px;
+  }
+}
+
+/* Context sources sit below a dashed rule, outside the citation sequence. */
+.ref-context {
+  margin-top: 22px;
+  border-top: 1px dashed #3a3f38;
+  padding-top: 14px;
+}
+.ref-context .ref-n { color: var(--ink-dim); }
+.ref-context .ref-t { color: #8a8f86; }
+
+/* Evidence identified but not yet gathered. Dashed, and it says so. */
+.pending {
+  margin-top: 22px;
+  border: 1px dashed #3a3f38;
+  padding: 13px;
+}
+.ref-body .ref-t { color: var(--ink-lit); }
+.ref-body .ref-k { color: var(--amber); }
+.ref-off .ref-n { color: var(--ink-dim); }
+

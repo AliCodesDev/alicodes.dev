@@ -1,0 +1,93 @@
+/* ---- Long-form prose. Archivo — this is Ali talking, not the archive. ---- */
+
+.prose {
+  font-size: 16.5px;
+  line-height: 1.72;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.prose > * + * { margin-top: 15px; }
+.prose h2 {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 9px;
+  margin-top: 34px;
+  text-wrap: balance;
+}
+.prose h2 + * { margin-top: 18px; }
+.prose h3 {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-top: 26px;
+}
+.prose strong {
+  font-weight: 700;
+  color: var(--ink-bright);
+}
+.prose code {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 14.5px;
+}
+.prose a {
+  color: var(--amber);
+  border-bottom: 1px solid var(--amber-edge);
+}
+.prose a:hover {
+  color: var(--green);
+  border-bottom-color: var(--green-edge);
+}
+.prose ul { list-style: none; padding-left: 0; }
+.prose ul > li {
+  position: relative;
+  padding-left: 20px;
+}
+.prose ul > li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 0.72em;
+  width: 5px;
+  height: 1px;
+  background: var(--amber-dim);
+}
+.prose ol { list-style: decimal; padding-left: 1.2rem; }
+.prose li + li { margin-top: 6px; }
+.prose blockquote {
+  border-left: 2px solid var(--amber);
+  padding-left: 14px;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 30px 0;
+}
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.prose th,
+.prose td {
+  text-align: left;
+  padding: 0.55rem 0.8rem;
+  border-bottom: 1px solid var(--rule);
+}
+.prose th {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--amber-dim);
+  font-weight: 400;
+}
+.prose :is(h2, h3) { scroll-margin-top: 5rem; }
+

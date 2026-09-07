@@ -1,0 +1,40 @@
+/* ---- Claims and their markers ---- */
+
+.claim {
+  background: var(--amber-wash);
+  border-bottom: 1px solid var(--amber-edge);
+  padding: 1px 2px;
+  color: var(--ink-bright);
+  transition: background-color 90ms linear, color 90ms linear,
+    border-color 90ms linear;
+}
+.mk {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  color: var(--amber);
+  letter-spacing: 0.06em;
+  margin-left: 4px;
+  white-space: nowrap;
+  transition: background-color 90ms linear, color 90ms linear;
+}
+
+/* Active: the claim under pointer or keyboard focus. */
+.claim-on {
+  background: var(--amber-live);
+  border-bottom-color: var(--amber);
+  color: var(--ink-lit);
+}
+.mk-on {
+  background: var(--amber);
+  color: var(--void);
+  padding: 1px 4px;
+}
+
+/* Stepped back: a sibling claim, while another one is active. */
+.claim-off {
+  background: transparent;
+  border-bottom-color: var(--rule);
+  color: var(--ink-faint);
+}
+.mk-off { color: var(--ink-faint); }
+

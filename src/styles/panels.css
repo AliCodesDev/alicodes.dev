@@ -1,0 +1,20 @@
+/* ---- Notched panels ---- */
+
+.notch {
+  clip-path: polygon(
+    0 10px, 10px 0,
+    calc(100% - 10px) 0, 100% 10px,
+    100% calc(100% - 10px), calc(100% - 10px) 100%,
+    10px 100%, 0 calc(100% - 10px)
+  );
+}
+
+/* One-pixel rule drawn as a padded parent, so the notch keeps its edge. */
+.panel {
+  background: var(--rule);
+  padding: 1px;
+}
+.panel-in {
+  background: var(--panel);
+}
+

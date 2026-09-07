@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   useCallback,
   useEffect,
@@ -18,9 +17,9 @@ import {
   Portrait,
 } from "@/components/record";
 import { SourcedContext, type Source } from "@/components/sourced";
-import { Streamed } from "@/components/streamed";
 import type { Evidence } from "@/lib/content";
-import { cx } from "@/lib/cx";
+import { AnswerView, RestView, SourceView } from "./views";
+import type { Answer, TabKey } from "./types";
 
 /*
  * The personnel record: a dossier on the left, and one panel on the right that
@@ -36,49 +35,11 @@ import { cx } from "@/lib/cx";
  * The panel never becomes two panels, and the page never scrolls: the grid row
  * is a definite height and the panel body is the only thing inside it that
  * scrolls.
- */
-
-export type TabKey =
-  | "projects"
-  | "experience"
-  | "education"
-  | "interests"
-  | "blog";
-
-export type AnswerRow = {
-  /** `01`-`04`. Curated position, not an array index. #0007. */
-  n: string;
-  title: string;
-  /** Set only when the row genuinely goes somewhere. #0018. */
-  href?: string;
-  /** System-voice detail on the right of the title: a place, a period. */
-  meta?: string;
-  /** Grades that detail when it is a state token rather than a date. #0014. */
-  metaTone?: "a" | "g" | "r" | "dim";
-  summary: string;
-  chips?: Evidence[];
-};
-
-/**
- * A question the record has already answered.
  *
- * `say` is the reply itself, streamed. Leaving it empty is how an answer
- * declines to have prose — the `nothing` block then becomes the whole reply,
- * which is #0013's editorial rule stated in the first person.
+ * This file is the state machine — which view is open, what has been heard,
+ * where `[ ← ]` goes — and the record beside it. What each view renders lives
+ * in `views.tsx`; the `Answer` vocabulary lives in `types.ts`.
  */
-export type Answer = {
-  label: string;
-  /** The question, echoed above the reply. */
-  asked: string;
-  say: string[];
-  rows?: AnswerRow[];
-  figure?: { src: string; alt: string; caption: string };
-  /** Source ids this reply rests on, opened from the reply's foot. */
-  cites?: string[];
-  /** Rendered instead of rows when the archive has nothing filed. #0023. */
-  nothing?: { head: string; body: string };
-  note: string;
-};
 
 type View =
   | { k: "rest" }
@@ -120,27 +81,6 @@ function revealPanel(id: string) {
 
 function isTab(value: string | null): value is TabKey {
   return value !== null && TAB_KEYS.includes(value);
-}
-
-/** `Link` for routes we own, a plain anchor for mail and the outside world. */
-function Anchor({
-  href,
-  className,
-  children,
-}: {
-  href: string;
-  className?: string;
-  children: ReactNode;
-}) {
-  return /^(https?:|mailto:)/.test(href) ? (
-    <a href={href} className={className}>
-      {children}
-    </a>
-  ) : (
-    <Link href={href} className={className}>
-      {children}
-    </Link>
-  );
 }
 
 export function Dossier({
@@ -399,189 +339,20 @@ export function Dossier({
             aria-live="polite"
             aria-atomic="false"
           >
-            {view.k === "rest" ? (
-              <div className="pnl-refs">
-                {cited.map((source) => (
-                  <button
-                    key={source.id}
-                    type="button"
-                    className={cx(
-                      "ref ref-btn",
-                      source.href && "ref-link",
-                      active !== null && active !== source.id && "ref-off",
-                    )}
-                    onClick={() => openSource(source.id)}
-                    onMouseEnter={() => setActive(source.id)}
-                    onMouseLeave={() => setActive(null)}
-                    onFocus={() => setActive(source.id)}
-                    onBlur={() => setActive(null)}
-                  >
-                    <span className="ref-n">[{number[source.id]}]</span>
-                    <span>
-                      <span className="ref-t">
-                        {source.title}
-                        {source.href ? " →" : null}
-                      </span>
-                      <span className="ref-k">{source.kind}</span>
-                    </span>
-                  </button>
-                ))}
-                <div className="pnl-note pnl-note-rule">
-                  Every source backing the record. Open one, or press a tab
-                  above to ask.
-                </div>
-              </div>
-            ) : null}
+            {view.k === "rest" ? <RestView cited={cited} /> : null}
 
             {view.k === "source" && openSrc ? (
-              <div>
-                <div className="flex items-start gap-[9px]">
-                  <div className="src-n">[{number[openSrc.id]}]</div>
-                  <div className="src-id">
-                    <div className="src-t">{openSrc.title}</div>
-                    <div className="src-k">{openSrc.kind}</div>
-                  </div>
-                </div>
-
-                <div className="src-sec src-sec-first">
-                  <div className="lbl-s">Backs /</div>
-                  <p className="src-backs">&ldquo;{openSrc.backs}&rdquo;</p>
-                </div>
-
-                <div className="src-sec">
-                  <div className="lbl-s">Verbatim /</div>
-                  <p className="src-quote">{openSrc.quote}</p>
-                </div>
-
-                <div className="src-sec">
-                  <div className="lbl-s">Located at /</div>
-                  {openSrc.href ? (
-                    <Anchor
-                      href={openSrc.href}
-                      className="src-loc src-loc-link block"
-                    >
-                      {openSrc.locus}
-                    </Anchor>
-                  ) : (
-                    <div className="src-loc">{openSrc.locus}</div>
-                  )}
-                  <div className="src-note">{openSrc.note}</div>
-                </div>
-              </div>
+              <SourceView source={openSrc} />
             ) : null}
 
-            {/*
-             * State 4. The question, then the reply, then what the reply rests
-             * on. The tail is held back until the stream settles, so the reply
-             * finishes being a reply before it becomes a list.
-             */}
             {view.k === "answer" && answer && openTabKey ? (
-              <div>
-                <div className="ans-asked">&gt; {answer.asked}</div>
-
-                {answer.say.length ? (
-                  <div className="ans-say">
-                    <Streamed
-                      key={openTabKey}
-                      paragraphs={answer.say}
-                      instant={heard.has(openTabKey)}
-                      onDone={onStreamed}
-                    />
-                  </div>
-                ) : null}
-
-                {settled || !answer.say.length ? (
-                  <div className="ans-tail">
-                    {answer.figure ? (
-                      <figure className="ans-fig">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={answer.figure.src}
-                          alt={answer.figure.alt}
-                          className="ans-fig-img"
-                        />
-                        <figcaption className="ans-fig-cap">
-                          {answer.figure.caption}
-                        </figcaption>
-                      </figure>
-                    ) : null}
-
-                    {answer.nothing ? (
-                      <div className="nof">
-                        <div className="nof-h">{answer.nothing.head}</div>
-                        <p className="nof-p">{answer.nothing.body}</p>
-                      </div>
-                    ) : null}
-
-                    {answer.rows?.length ? (
-                      <div className="ans-rows">
-                        {answer.rows.map((row) => (
-                          <div key={row.n} className="sec-row">
-                            <div className="flex items-baseline gap-[11px]">
-                              <span className="sec-n">{row.n}</span>
-                              <div className="min-w-0 flex-1">
-                                <div className="sec-head">
-                                  {row.href ? (
-                                    <Anchor href={row.href} className="sec-t">
-                                      {row.title}
-                                    </Anchor>
-                                  ) : (
-                                    <div className="sec-t">{row.title}</div>
-                                  )}
-                                  {row.meta ? (
-                                    <div
-                                      className={cx(
-                                        "sec-meta",
-                                        row.metaTone && `val-${row.metaTone}`,
-                                      )}
-                                    >
-                                      {row.meta}
-                                    </div>
-                                  ) : null}
-                                </div>
-                                <p className="sec-s">{row.summary}</p>
-                                {row.chips?.length ? (
-                                  <div className="mt-[9px]">
-                                    <Chips items={row.chips} />
-                                  </div>
-                                ) : null}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : null}
-
-                    {/* The reply's citations, opening the same source cards a
-                     * marked claim opens. One apparatus, not two. #0030. */}
-                    {answer.cites?.length ? (
-                      <div className="ans-cites">
-                        <div className="lbl-s">Drawn from /</div>
-                        <div className="ans-cite-row">
-                          {answer.cites.map((id) => (
-                            <button
-                              key={id}
-                              type="button"
-                              className="ans-cite"
-                              onClick={() => openSource(id)}
-                              onMouseEnter={() => setActive(id)}
-                              onMouseLeave={() => setActive(null)}
-                              onFocus={() => setActive(id)}
-                              onBlur={() => setActive(null)}
-                            >
-                              [{number[id]}] {byId[id]?.title}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    <div className="pnl-note pnl-note-rule">
-                      {answer.note}
-                    </div>
-                  </div>
-                ) : null}
-              </div>
+              <AnswerView
+                answer={answer}
+                tab={openTabKey}
+                instant={heard.has(openTabKey)}
+                settled={settled}
+                onDone={onStreamed}
+              />
             ) : null}
           </div>
 

@@ -1,0 +1,43 @@
+/* ---- Portrait ---- */
+
+.portrait-frame {
+  width: var(--pw);
+  height: var(--ph);
+  border: 1px solid var(--amber-dim);
+  position: relative;
+  overflow: hidden;
+  background: var(--void);
+}
+/*
+ * portrait.png is white-on-transparent (scripts/dither-portrait.py). It is
+ * tinted here through a mask so it follows the amber token — never recoloured
+ * by hand, never baked in. #0015.
+ */
+.portrait-mask {
+  width: 100%;
+  height: 100%;
+  background-color: var(--amber);
+  -webkit-mask-image: url("/portrait.png");
+  mask-image: url("/portrait.png");
+  -webkit-mask-size: cover;
+  mask-size: cover;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+.portrait-scan {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.28) 0px,
+    rgba(0, 0, 0, 0.28) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+

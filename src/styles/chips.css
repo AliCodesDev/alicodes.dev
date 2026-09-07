@@ -1,0 +1,25 @@
+/* ---- Evidence chips ---- */
+
+.chip {
+  font-family: var(--font-mono), "SF Mono", Menlo, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  padding: 3px 6px;
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+/* Green means live or verified. It is never decoration. */
+.chip-g {
+  color: var(--green);
+  border-color: var(--green-edge);
+}
+/* Dashed and grey: context, or evidence not yet gathered. */
+.chip-n {
+  color: var(--ink-faint);
+  border-style: dashed;
+}
+

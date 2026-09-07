@@ -49,8 +49,11 @@ Standing as of this session:
 - `src/app/(archive)/page.tsx` — the five answers, every source and every row,
   assembled on the server and handed to the client component as props. Nothing
   in them is retyped from a record (#0020).
-- `src/components/dossier.tsx` — the record, the folder tabs, and the panel's
-  state machine. Answers sync to `?s=<tab>` through the History API. On the
+- `src/components/dossier/` — the record, the folder tabs, and the panel.
+  Since 2026-09-07 it is a module: `dossier.tsx` is the state machine,
+  `views.tsx` renders the panel's REST / SOURCE / ANSWER states, `types.ts` is
+  the `Answer` vocabulary, and `index.ts` keeps `@/components/dossier`
+  resolving. Answers sync to `?s=<tab>` through the History API. On the
   stacked layout, opening one scrolls the panel into view.
 - `src/components/streamed.tsx` — the reply arriving, token by token. Runs once
   per answer per session, skipped under `prefers-reduced-motion`, and backed by
@@ -80,7 +83,9 @@ The design canvas is the source of truth for the design, not this repo:
 Nine boards: `Main` (the record), `Active` (claim active), `SafiyrFile`,
 `GenieFile` / `GenieResolved` (before and after evidence), **`MobileRec`
 (390px)**, `Spec2` (type & colour), and two v1s. `Spec2` was checked against
-`globals.css` this session and the token layer is faithful to it.
+the stylesheet in an earlier session and the token layer is faithful to it.
+(The tokens have since moved to `src/styles/base.css` in the 2026-09-07
+split — `:root` travelled verbatim, so the check still stands.)
 
 **`MobileRec` is why #0022 is gone.** That board had been drawn all along; the
 repo had simply lost track of it, and its absence was the entire stated reason
@@ -102,7 +107,9 @@ values from the boards, not from screenshots.
    described it yet.
 
    The CSS waiting for that rail is `.rail`, `.rail-body`, `.rail-chev`,
-   `.rail-count`, `.ref-body`, `.ref-context`, `.ref-n-on` and `.ref-quote`.
+   `.rail-count`, `.ref-body` and `.ref-context` in
+   `src/styles/record-rail.css`, plus `.ref-n-on` and `.ref-quote` in
+   `src/styles/refs.css`.
    **Do not read that as "the `.ref-*` classes are dead"** — the rest of the
    family (`.ref`, `.ref-n`, `.ref-t`, `.ref-k`, `.ref-btn`, `.ref-link`,
    `.ref-off`) is what draws the panel's REST state, and deleting it would take
@@ -123,14 +130,12 @@ values from the boards, not from screenshots.
   `public/` and add the field to one answer in `src/app/(archive)/page.tsx`.
 - **`Pending`** in `src/components/sourced.tsx` — the evidence-not-yet-gathered
   block GENIELearn's record wants. Still rendered by nothing.
-- **`.tab-stub` / `.tab-stub-in`** are dead as of #0030: they styled the `+`
-  tab that meant "more sections coming", and with five tabs the set is the set.
-  Two rules near the tab block in `globals.css`, plus their `clip-path: none`
-  line in the stacked-layout media query. They can go whenever someone is in
-  there.
-- **`.mono`** and `.prose .table-scroll` are defined and used by nothing. The
-  table wrapper expects markup no rehype plugin generates — `next.config.ts`
-  runs `remark-gfm` and `rehype-slug` only.
+
+(`.tab-stub` / `.tab-stub-in`, `.mono`, `.prose .table-scroll` and a duplicate
+`.rec-fields` block used to be listed here; all four were deleted on
+2026-09-07 after proving nothing renders them — grep across `src/` and
+`content/`, plus an audit of every template-literal `className`, of which the
+only dynamic form anywhere is `` `val-${tone}` ``.)
 
 ## Open threads
 
