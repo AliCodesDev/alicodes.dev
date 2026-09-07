@@ -21,6 +21,9 @@ take credibility.
 - Project ordering is curated via `metadata.order`, never alphabetical.
 - Run `pnpm build` before committing. It type-checks and prerenders every route,
   so it catches broken content imports that `pnpm dev` will happily tolerate.
+  CI (`.github/workflows/ci.yml`) runs `pnpm lint` and `pnpm build` on every PR
+  and on `main`, so a miss cannot land silently — but it is a backstop, not a
+  substitute for running the build locally first.
 - A record's short state and source tokens (`metadata.state`, `metadata.source`)
   are what the field grid and the registry render; `metadata.status` stays the
   sentence, and closes the record in the registry footer.

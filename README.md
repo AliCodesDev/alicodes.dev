@@ -28,7 +28,7 @@ pnpm lint
 ```
 
 Run `pnpm build` before committing. It catches broken content imports that
-`pnpm dev` will happily tolerate.
+`pnpm dev` will happily tolerate. CI runs both commands on every PR.
 
 ## Stack
 
