@@ -1,6 +1,16 @@
 @import "tailwindcss";
 
 /*
+ * Tailwind scans every non-gitignored file for class candidates, and workflow
+ * YAML cannot choose its words: `permissions: contents:` in deploy.yml emitted
+ * `.contents{display:contents}` into both root layouts' CSS. Prose can take a
+ * synonym (the CLAUDE.md gotcha); .github/ cannot, so it is excluded from the
+ * scan instead. Markup never uses Tailwind classes named after YAML keys, so
+ * nothing real is lost.
+ */
+@source not "../../.github";
+
+/*
  * The archive record. DECISIONS.md #0013 (sourced claims) and #0014 (visual
  * direction). Values are lifted from the design canvas artboards, not eyeballed.
  *

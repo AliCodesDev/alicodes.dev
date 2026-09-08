@@ -428,4 +428,9 @@ runtime, and this one needs a file server; a second platform for what GitHub
 already hosts is surface without argument). Considered publishing the
 placeholder entry to keep `[slug]` live (rejected: shipping a placeholder to
 satisfy a build constraint is the archive faking an answer, which is the one
-thing it is built not to do).
+thing it is built not to do). One execution fact worth keeping: the custom
+domain was attached to Pages before the Namecheap records existed, and GitHub
+never started the certificate request — the served cert stayed the
+`*.github.io` fallback and the API showed no certificate process at all.
+Detaching and re-attaching the domain once DNS resolved kicked issuance, which
+completed in under a minute; HTTPS enforcement went on right after.

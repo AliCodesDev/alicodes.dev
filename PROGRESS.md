@@ -3,17 +3,18 @@
 Running state. Updated at the end of every session. Detail lives in
 `DECISIONS.md` and the git log; this file answers "where are we, what's next".
 
-**Last updated:** 2026-09-07
+**Last updated:** 2026-09-08
 
 ---
 
 ## Where we are
 
 Next.js 16 App Router, TypeScript, Tailwind v4, MDX content. `pnpm dev` is all
-it takes to run. **Deployed:** the build is a static export (#0033) published
-to GitHub Pages by `.github/workflows/deploy.yml` on every push to `main`,
-serving `alicodes.dev` — #0012's condition was met on 2026-09-07 and the
-domain came off the shelf.
+it takes to run. **Live at <https://alicodes.dev> since 2026-09-07:** the
+build is a static export (#0033) published to GitHub Pages by
+`.github/workflows/deploy.yml` on every push to `main`. HTTPS is enforced,
+`www` and plain `http` both 301 to the apex, and the themed 404 serves with a
+real 404 status. #0012 is resolved.
 
 **The whole site carries the design**, and since 2026-08-25 the folder tabs
 are the site's central gesture rather than its navigation. Pressing one asks a

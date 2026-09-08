@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Same exclusion as globals.css: workflow YAML's own keywords (`contents:`)
+ * are Tailwind class candidates, and .github/ cannot reword them. */
+@source not "../../../.github";
+
 /*
  * /resume only. DECISIONS.md #0010: plain, print-friendly, no chrome, no
  * theme, no interaction. Some readers are non-technical, in a hurry, or

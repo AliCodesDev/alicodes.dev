@@ -50,7 +50,10 @@ take credibility.
   spell a utility name gets its rule emitted into the compiled CSS of both
   root layouts. Found when a decision-log sentence grew the CSS chunks by one
   positioning rule. Harmless unless markup accidentally uses the class, but it
-  breaks byte-identical CSS comparisons; prefer a synonym in prose.
+  breaks byte-identical CSS comparisons; prefer a synonym in prose. Workflow
+  YAML cannot reword its own keys (`permissions: contents:` bit exactly this
+  way), so `.github/` is excluded from the scan with `@source not` in both
+  root stylesheets — prose elsewhere still takes the synonym.
 - **A running `next dev` poisons `pnpm build` if you check out an older
   commit.** The dev server regenerates `.next/dev/types/validator.ts` against
   whatever is on disk, so checking out a commit from before the `(archive)` /
